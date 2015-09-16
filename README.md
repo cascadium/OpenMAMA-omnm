@@ -77,11 +77,6 @@ property USE_OMNMSG to 1 in bridge.c for the ZeroMQ bridge.
 
 ## Related Projects
 
-I am also in the process of cleaning up a native payload implementation  which
-was created to allow performance tests which are actually useful (qpid proton
-payloads are too slow to actually test the capacity of this bridge). When that
-project comes online, it will also be linked here.
-
 * [OpenMAMA](http://openmama.org)
 * [ZeroMQ](http://zeromq.org)
 * [OpenMAMA ZeroMQ Middleware Bridge](https://github.com/fquinner/OpenMAMA-zmq)
