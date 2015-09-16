@@ -1,0 +1,74 @@
+build_unit_tests=True
+
+lib_env = Environment (
+    WITH_MAMA_SOURCE = GetOption('with_mamasource'),
+    WITH_MAMA        = GetOption('with_mamainstall'),
+    LIBS     =  [
+                    'mama',
+                    'wombatcommon',
+                ],
+    LIBPATH  =  [
+                    '$WITH_MAMA/lib',
+                    '.',
+                ],
+    CPPPATH  =  [
+                    './src',
+                    '$WITH_MAMA_SOURCE/mama/c_cpp/src/c',
+                    '$WITH_MAMA/include',
+                ],
+    CPPFLAGS =  [
+                    '-g',
+                    '-O2',
+                    '-Werror',
+                    '-Wno-unused-function',
+                    '-Wall',
+                ]
+)
+
+ut_env = lib_env.Clone ()
+ut_env.Append (
+    LIBS        = [ 'gtest', 'mamaomnmmsgimpl' ],
+)
+
+if not lib_env.GetOption('clean') and not lib_env.GetOption('help'):
+    conf = Configure (lib_env)
+
+    if not conf.CheckCHeader ('mamainternal.h'):
+        print 'Cannot find MAMA Source code - check --with-mamasource'
+        Exit(1)
+
+    if not conf.CheckCXXHeader ('gtest/gtest.h'):
+        print 'Cannot find gtest/gtest.h - not building with unit tests'
+        build_unit_tests=False
+        Exit(1)
+
+    if not conf.CheckLib ('mama'):
+        print 'Cannot find MAMA install directory - check --with-mamainstall'
+        Exit(1)
+
+lib_env.SharedLibrary (
+    'mamaomnmmsgimpl',
+    [
+        'Field.cpp',
+        'Iterator.cpp',
+        'Payload.cpp'
+    ]
+)
+
+# Install the library and unit test files to the top directory
+lib_env.Command ("../libmamaomnmmsgimpl.so",
+                 'libmamaomnmmsgimpl.so',
+                 [
+                     Copy("$TARGET", "$SOURCE"),
+                 ]
+)
+
+if build_unit_tests:
+    ut_env.Program ('unittests', ['UnitTests.cpp'])
+    ut_env.Command ("../unittests",
+                    'unittests',
+                    [
+                        Copy("$TARGET", "$SOURCE"),
+                    ]
+    )
+
