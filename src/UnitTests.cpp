@@ -230,3 +230,34 @@ TEST_F(OmnmTests, IteratorTest)
     field = omnmmsgPayloadIter_next(iterOpaque, NULL, mPayloadBase);
     ASSERT_EQ (NULL, field);
 }
+
+TEST_F(OmnmTests, CreateAndUpdateShrinkingStrings)
+{
+    mama_i64_t actual1 = 0;
+    const char* actual2a = NULL;
+    const char* actual2b = NULL;
+    mama_i64_t actual3 = 0;
+    mama_fid_t fid1 = 101;
+    mama_fid_t fid2 = 102;
+    mama_fid_t fid3 = 103;
+    mama_i64_t expected1 = 12398;
+    const char* expected2a = "str_longer";
+    const char* expected2b = "str_shrt";
+    mama_i64_t expected3 = 12400;
+
+    omnmmsgPayload_addI64 (mPayloadBase, NULL, fid1, expected1);
+    omnmmsgPayload_addString (mPayloadBase, NULL, fid2, expected2a);
+    omnmmsgPayload_addI64 (mPayloadBase, NULL, fid3, expected3);
+    omnmmsgPayload_getString (mPayloadBase, NULL, fid2, &actual2a);
+    EXPECT_STREQ (expected2a, actual2a);
+
+    omnmmsgPayload_updateString (mPayloadBase, NULL, fid2, expected2b);
+
+    omnmmsgPayload_getI64 (mPayloadBase, NULL, fid1, &actual1);
+    omnmmsgPayload_getString (mPayloadBase, NULL, fid2, &actual2b);
+    omnmmsgPayload_getI64 (mPayloadBase, NULL, fid3, &actual3);
+
+    EXPECT_EQ (expected1, actual1);
+    EXPECT_STREQ (expected2b, actual2b);
+    EXPECT_EQ (expected3, actual3);
+}

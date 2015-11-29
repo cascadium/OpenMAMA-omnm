@@ -217,19 +217,21 @@ OmnmPayloadImpl::updateField (omnmFieldImpl& field, uint8_t* buffer,
     {
         int32_t delta = bufferLen - field.mSize;
 
-        // If the buffer is going to move stuff around it
-        // TODO: Handle fields that have shrunk (e.g. short strings)
+        // This will be the new offset of next field after the move
+        size_t nextByteOffset = ((uint8_t*)field.mData - mPayloadBuffer) +
+                field.mSize;
+
+        // Increase the buffer *if necessary*
         if (delta > 0)
         {
-            // This will be the new required size
-            size_t nextByteOffset = ((uint8_t*)field.mData - mPayloadBuffer) +
-                    field.mSize;
-
-            // Increase the buffer *if necessary*
             allocateBufferMemory ((void**)&mPayloadBuffer,
                                   &mPayloadBufferSize,
                                   mPayloadBufferSize + delta);
+        }
 
+        // If the field has changed in size, we need to move memory
+        if (delta != 0)
+        {
             // This will point to the first field after insertion
             uint8_t* origin = mPayloadBuffer + nextByteOffset;
             // This will point to the number of remaining bytes after this field
