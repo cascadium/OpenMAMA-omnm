@@ -261,3 +261,24 @@ TEST_F(OmnmTests, CreateAndUpdateShrinkingStrings)
     EXPECT_STREQ (expected2b, actual2b);
     EXPECT_EQ (expected3, actual3);
 }
+
+TEST_F(OmnmTests, CreateAndUpdateGrowingStrings)
+{
+    mama_fid_t fid = 102;
+    const char* actaullong = NULL;
+    const char* actaulshort = NULL;
+    const char* expectedshort = "str_shrt";
+    const char* expectedlong = "str_longer";
+
+    omnmmsgPayload_addString (mPayloadBase, NULL, fid, expectedshort);
+    omnmmsgPayload_getString (mPayloadBase, NULL, fid, &actaulshort);
+    EXPECT_STREQ (expectedshort, actaulshort);
+    
+    omnmmsgPayload_updateString (mPayloadBase, NULL, fid, expectedlong);
+    omnmmsgPayload_getString (mPayloadBase, NULL, fid, &actaullong);
+    EXPECT_STREQ (expectedlong, actaullong);
+    
+    omnmmsgPayload_updateString (mPayloadBase, NULL, fid, expectedshort);
+    omnmmsgPayload_getString (mPayloadBase, NULL, fid, &actaulshort);
+    EXPECT_STREQ (expectedshort, actaulshort);
+}
