@@ -3,7 +3,7 @@ build_unit_tests=True
 lib_env = Environment (
     WITH_MAMA_SOURCE = GetOption('with_mamasource'),
     WITH_MAMA        = GetOption('with_mamainstall'),
-    WITH_GTEST        = GetOption('with_gtest'),
+    WITH_GTEST       = GetOption('with_gtest'),
     LIBS     =  [
                     'mama',
                     'wombatcommon',
