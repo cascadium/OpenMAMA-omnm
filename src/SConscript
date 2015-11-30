@@ -3,18 +3,21 @@ build_unit_tests=True
 lib_env = Environment (
     WITH_MAMA_SOURCE = GetOption('with_mamasource'),
     WITH_MAMA        = GetOption('with_mamainstall'),
+    WITH_GTEST        = GetOption('with_gtest'),
     LIBS     =  [
                     'mama',
                     'wombatcommon',
                 ],
     LIBPATH  =  [
                     '$WITH_MAMA/lib',
+                    '$WITH_GTEST/lib',
                     '.',
                 ],
     CPPPATH  =  [
                     './src',
                     '$WITH_MAMA_SOURCE/mama/c_cpp/src/c',
                     '$WITH_MAMA/include',
+                    '$WITH_GTEST/include',
                 ],
     CPPFLAGS =  [
                     '-g',

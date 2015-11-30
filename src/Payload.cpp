@@ -227,6 +227,13 @@ OmnmPayloadImpl::updateField (omnmFieldImpl& field, uint8_t* buffer,
             allocateBufferMemory ((void**)&mPayloadBuffer,
                                   &mPayloadBufferSize,
                                   mPayloadBufferSize + delta);
+
+          // As we have potentially moved the memory the field data may be invalid
+          mama_status   status = findFieldInBuffer ("", field.mFid, field);
+          if (MAMA_STATUS_OK != status)
+          {
+              return MAMA_STATUS_NOT_FOUND;
+          }
         }
 
         // If the field has changed in size, we need to move memory
@@ -240,6 +247,7 @@ OmnmPayloadImpl::updateField (omnmFieldImpl& field, uint8_t* buffer,
             memmove ((void*)(origin + delta), origin, size);
         }
         mPayloadBufferTail += delta;
+
     }
     memcpy ((void*)field.mData, (void*)buffer, bufferLen);
     return MAMA_STATUS_OK;
