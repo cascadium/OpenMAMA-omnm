@@ -10,7 +10,9 @@ lib_env = Environment (
                 ],
     LIBPATH  =  [
                     '$WITH_MAMA/lib',
+                    '$WITH_MAMA/lib64',
                     '$WITH_GTEST/lib',
+                    '$WITH_GTEST/lib64',
                     '.',
                 ],
     CPPPATH  =  [
