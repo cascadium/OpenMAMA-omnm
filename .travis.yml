@@ -22,4 +22,4 @@ before_install:
 
 script:
  - cd $SOURCE_DIR
- - scons --with-mamasource=$MAMA_SOURCE --with-mamainstall=$MAMA_INSTALL
+ - scons --with-mamasource=$MAMA_SOURCE --with-mamainstall=$MAMA_INSTALL --with-gtest=/usr
