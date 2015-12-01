@@ -224,18 +224,20 @@ OmnmPayloadImpl::updateField (omnmFieldImpl& field, uint8_t* buffer,
         // Increase the buffer *if necessary*
         if (delta > 0)
         {
-            // Cache pointer indices from main buffer
-            int dataOffset = (uint8_t*)field.mData - mPayloadBuffer;
-            int nameOffset = (uint8_t*)field.mName - mPayloadBuffer;
+            const uint8_t* payloadBufferPrev = mPayloadBuffer;
 
             // Increase buffer memory
             allocateBufferMemory ((void**)&mPayloadBuffer,
                                   &mPayloadBufferSize,
                                   mPayloadBufferSize + delta);
 
-            // Assume buffers have moved and re-apply offsets
-            field.mData = mPayloadBuffer + dataOffset;
-            field.mName = (const char*)mPayloadBuffer + nameOffset;
+            // If the allocateBufferMemory (realloc) has actually moved the underlying buffer
+            if(payloadBufferPrev != mPayloadBuffer)
+            {
+              // buffers have moved so re-apply offsets
+              field.mData = mPayloadBuffer + ((uint8_t*)field.mData - payloadBufferPrev);
+              field.mName = (const char*)mPayloadBuffer + ((uint8_t*)field.mName - payloadBufferPrev);
+            }
         }
 
         // If the field has changed in size, we need to move memory
