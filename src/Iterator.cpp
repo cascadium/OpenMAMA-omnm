@@ -80,6 +80,9 @@ omnmmsgPayloadIter_next (msgPayloadIter          iter,
 {
     omnmIterImpl*   impl    = (omnmIterImpl*) iter;
 
+    if (NULL == iter)
+        return NULL;
+
     // If the current buffer iterator position is at or past the end
     if (impl->mMsg->mPayloadBuffer + impl->mMsg->mPayloadBufferTail <= impl->mBufferPosition)
     {
@@ -193,6 +196,9 @@ omnmmsgPayloadIter_begin (msgPayloadIter          iter,
                           msgPayload              msg)
 {
     omnmIterImpl* impl = (omnmIterImpl*) iter;
+
+    if (NULL == iter || NULL == msg) return NULL;
+
     impl->mMsg         = (OmnmPayloadImpl*)msg;
 
     /* Start iterating just after the message type byte */

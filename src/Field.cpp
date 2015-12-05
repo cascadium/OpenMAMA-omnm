@@ -105,6 +105,7 @@ mama_status
 omnmmsgFieldPayload_getType (const msgFieldPayload   field,
                              mamaFieldType*          result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     *result = ((omnmFieldImpl*)field)->mFieldType;
     return MAMA_STATUS_OK;
 }
@@ -155,6 +156,7 @@ omnmmsgFieldPayload_getFid (const msgFieldPayload   field,
                             mamaFieldDescriptor     desc,
                             uint16_t*               result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     *result = ((omnmFieldImpl*)field)->mFid;
     return MAMA_STATUS_OK;
 }
@@ -208,6 +210,7 @@ omnmmsgFieldPayload_updateBool (msgFieldPayload         field,
                                 msgPayload              msg,
                                 mama_bool_t             value)
 {
+    if (NULL == field || NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)&value, sizeof(value));
 }
 
@@ -216,6 +219,7 @@ omnmmsgFieldPayload_updateChar (msgFieldPayload         field,
                                 msgPayload              msg,
                                 char                    value)
 {
+    if (NULL == field || NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)&value, sizeof(value));
 }
 
@@ -224,6 +228,7 @@ omnmmsgFieldPayload_updateI8    (msgFieldPayload         field,
                                  msgPayload              msg,
                                  mama_i8_t               value)
 {
+    if (NULL == field || NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)&value, sizeof(value));
 }
 
@@ -232,6 +237,7 @@ omnmmsgFieldPayload_updateU8    (msgFieldPayload         field,
                                  msgPayload              msg,
                                  mama_u8_t               value)
 {
+    if (NULL == field || NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)&value, sizeof(value));
 }
 
@@ -240,6 +246,7 @@ omnmmsgFieldPayload_updateI16   (msgFieldPayload         field,
                                  msgPayload              msg,
                                  mama_i16_t              value)
 {
+    if (NULL == field || NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)&value, sizeof(value));
 }
 
@@ -248,6 +255,7 @@ omnmmsgFieldPayload_updateU16   (msgFieldPayload         field,
                                  msgPayload              msg,
                                  mama_u16_t              value)
 {
+    if (NULL == field || NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)&value, sizeof(value));
 }
 
@@ -256,6 +264,7 @@ omnmmsgFieldPayload_updateI32   (msgFieldPayload         field,
                                  msgPayload              msg,
                                  mama_i32_t              value)
 {
+    if (NULL == field || NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)&value, sizeof(value));
 }
 
@@ -264,6 +273,7 @@ omnmmsgFieldPayload_updateU32   (msgFieldPayload         field,
                                  msgPayload              msg,
                                  mama_u32_t              value)
 {
+    if (NULL == field || NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)&value, sizeof(value));
 }
 
@@ -272,6 +282,7 @@ omnmmsgFieldPayload_updateI64   (msgFieldPayload         field,
                                  msgPayload              msg,
                                  mama_i64_t              value)
 {
+    if (NULL == field || NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)&value, sizeof(value));
 }
 
@@ -280,6 +291,7 @@ omnmmsgFieldPayload_updateU64   (msgFieldPayload         field,
                                  msgPayload              msg,
                                  mama_u64_t              value)
 {
+    if (NULL == field || NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)&value, sizeof(value));
 }
 
@@ -288,6 +300,7 @@ omnmmsgFieldPayload_updateF32   (msgFieldPayload         field,
                                  msgPayload              msg,
                                  mama_f32_t              value)
 {
+    if (NULL == field || NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)&value, sizeof(value));
 }
 
@@ -296,6 +309,7 @@ omnmmsgFieldPayload_updateF64   (msgFieldPayload         field,
                                  msgPayload              msg,
                                  mama_f64_t              value)
 {
+    if (NULL == field || NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)&value, sizeof(value));
 }
 
@@ -304,6 +318,7 @@ omnmmsgFieldPayload_updateString(msgFieldPayload         field,
                                  msgPayload              msg,
                                  const char*             str)
 {
+    if (NULL == field || NULL == msg || NULL == str) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)str, strlenEx(str) + 1);
 }
 
@@ -313,6 +328,7 @@ omnmmsgFieldPayload_updateDateTime
                                 msgPayload              msg,
                                 const mamaDateTime      value)
 {
+    if (NULL == field || NULL == msg || NULL == value) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->updateField(*((omnmFieldImpl*)field), (uint8_t*)value, sizeof(*value));
 }
 
@@ -336,6 +352,7 @@ mama_status
 omnmmsgFieldPayload_getBool (const msgFieldPayload   field,
                              mama_bool_t*            result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -343,6 +360,7 @@ mama_status
 omnmmsgFieldPayload_getChar (const msgFieldPayload   field,
                              char*                   result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -350,6 +368,7 @@ mama_status
 omnmmsgFieldPayload_getI8   (const msgFieldPayload   field,
                              mama_i8_t*              result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -357,6 +376,7 @@ mama_status
 omnmmsgFieldPayload_getU8   (const msgFieldPayload   field,
                              mama_u8_t*              result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -364,6 +384,7 @@ mama_status
 omnmmsgFieldPayload_getI16  (const msgFieldPayload   field,
                              mama_i16_t*             result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -371,6 +392,7 @@ mama_status
 omnmmsgFieldPayload_getU16  (const msgFieldPayload   field,
                              mama_u16_t*            result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -378,6 +400,7 @@ mama_status
 omnmmsgFieldPayload_getI32  (const msgFieldPayload   field,
                              mama_i32_t*             result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -385,6 +408,7 @@ mama_status
 omnmmsgFieldPayload_getU32  (const msgFieldPayload   field,
                              mama_u32_t*             result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -392,6 +416,7 @@ mama_status
 omnmmsgFieldPayload_getI64  (const msgFieldPayload   field,
                              mama_i64_t*             result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -399,6 +424,7 @@ mama_status
 omnmmsgFieldPayload_getU64  (const msgFieldPayload   field,
                              mama_u64_t*             result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -406,6 +432,7 @@ mama_status
 omnmmsgFieldPayload_getF32  (const msgFieldPayload   field,
                              mama_f32_t*             result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -413,6 +440,7 @@ mama_status
 omnmmsgFieldPayload_getF64  (const msgFieldPayload   field,
                              mama_f64_t*             result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -420,6 +448,7 @@ mama_status
 omnmmsgFieldPayload_getString (const msgFieldPayload   field,
                                const char**            result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -439,6 +468,7 @@ mama_status
 omnmmsgFieldPayload_getDateTime (const msgFieldPayload   field,
                                  mamaDateTime            result)
 {
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     return ((omnmFieldImpl*)field)->mParent->getField(*((omnmFieldImpl*)field), result);
 }
 
@@ -608,7 +638,7 @@ omnmmsgFieldPayload_getAsString       (const msgFieldPayload   field,
 
     omnmFieldImpl* impl = (omnmFieldImpl*)field;
 
-    if (NULL == buffer)
+    if (NULL == buffer || NULL == field)
     {
         return MAMA_STATUS_NULL_ARG;
     }

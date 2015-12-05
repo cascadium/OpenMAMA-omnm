@@ -103,6 +103,18 @@ public:
         return MAMA_STATUS_OK;
     }
 
+    mama_status
+    getField(const char* name, mama_fid_t fid, omnmFieldImpl& field)
+    {
+        mama_status status = this->findFieldInBuffer (name, fid, field);
+        if (MAMA_STATUS_OK != status)
+        {
+            return MAMA_STATUS_NOT_FOUND;
+        }
+
+        return MAMA_STATUS_OK;
+    }
+
     // Add payload field according to the type and values provided
     mama_status
     addField    (mamaFieldType  type,
@@ -137,6 +149,8 @@ public:
     // Tail always points to the end of the 'useful' part of the buffer, where
     // the free space in the remaining buffer lives
     size_t      mPayloadBufferTail;
+
+    struct omnmFieldImpl mField;
 private:
     // Find the field inside the buffer and populate provided field with its
     // location
