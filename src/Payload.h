@@ -26,8 +26,19 @@
 #define MAMA_BRIDGE_OMNM_MSG_PAYLOAD_H__
 
 #include <mama/mama.h>
+#include <mama/price.h>
+#include <wombat/strutils.h>
 
 class OmnmPayloadImpl;
+
+#define VALIDATE_NAME_FID(NAME, FID)                                           \
+do                                                                             \
+{                                                                              \
+    if (NULL == NAME && 0 == FID)                                              \
+        return MAMA_STATUS_NULL_ARG;                                           \
+    else if (0 == strlenEx(NAME) && 0 == FID)                                  \
+        return MAMA_STATUS_INVALID_ARG;                                        \
+} while (0)
 
 typedef struct omnmFieldImpl
 {
@@ -50,6 +61,7 @@ public:
     getField(mamaFieldType type, const char* name, mama_fid_t fid, T* s)
     {
         omnmFieldImpl field;
+        VALIDATE_NAME_FID(name, fid);
         mama_status status = findFieldInBuffer (name, fid, field);
         if (MAMA_STATUS_OK != status)
         {
@@ -64,6 +76,7 @@ public:
     mama_status
     getField(struct omnmFieldImpl& field, T* s)
     {
+        VALIDATE_NAME_FID(field.mName, field.mFid);
         memset (s, 0, sizeof(T));
 
         // If size on wire doesn't match requested size, return error
@@ -82,6 +95,7 @@ public:
     getField(mamaFieldType type, const char* name, mama_fid_t fid, T** s)
     {
         omnmFieldImpl field;
+        VALIDATE_NAME_FID(name, fid);
         mama_status status = findFieldInBuffer (name, fid, field);
         if (MAMA_STATUS_OK != status)
         {
@@ -97,6 +111,7 @@ public:
     mama_status
     getField(omnmFieldImpl& field, T** s)
     {
+        VALIDATE_NAME_FID(field.mName, field.mFid);
         // If data type is a pointer, simply point it to the data buffer
         *s = ((T*) field.mData);
 
@@ -151,6 +166,7 @@ public:
     size_t      mPayloadBufferTail;
 
     struct omnmFieldImpl mField;
+    mamaMsg mParent;
 private:
     // Find the field inside the buffer and populate provided field with its
     // location

@@ -152,6 +152,8 @@ OmnmPayloadImpl::addField (mamaFieldType type, const char* name, mama_fid_t fid,
     size_t newTail = mPayloadBufferTail + FIELD_TYPE_WIDTH + FID_WIDTH +
             strlenEx(name) + 1 + bufferLen;
 
+    VALIDATE_NAME_FID(name, fid);
+
     // Ensure the buffer is big enough for this
     allocateBufferMemory ((void**)&mPayloadBuffer,
                           &mPayloadBufferSize,
@@ -308,6 +310,7 @@ omnmmsgPayload_create (msgPayload* msg)
 mama_status
 omnmmsgPayload_destroy (msgPayload msg)
 {
+    if (NULL == msg) return MAMA_STATUS_NULL_ARG;
     delete (OmnmPayloadImpl*) msg;
     return MAMA_STATUS_OK;
 }
@@ -361,21 +364,45 @@ mama_status
 omnmmsgPayload_setParent (msgPayload    msg,
                           const mamaMsg parent)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    if (NULL == msg) return MAMA_STATUS_NULL_ARG;
+    ((OmnmPayloadImpl*) msg)->mParent = (mamaMsg) parent;
+    return MAMA_STATUS_OK;
 }
 
 mama_status
 omnmmsgPayload_getByteSize (msgPayload    msg,
                             mama_size_t*  size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    if (NULL == msg) return MAMA_STATUS_NULL_ARG;
+    *size = ((OmnmPayloadImpl*) msg)->mPayloadBufferTail;
+    return MAMA_STATUS_OK;
 }
 
 mama_status
 omnmmsgPayload_getNumFields (const msgPayload    msg,
                              mama_size_t*        numFields)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    omnmIterImpl        iter;
+    OmnmPayloadImpl*    impl            = (OmnmPayloadImpl*) msg;
+    mama_size_t         count           = 0;
+
+    if (NULL == msg || NULL == numFields) return MAMA_STATUS_NULL_ARG;
+
+    // This is really just for type casting so we can easily use bridge
+    // iterator methods directly
+    msgPayloadIter iterOpaque = (msgPayloadIter)&iter;
+
+    // Initialize the iterator for this message
+    omnmmsgPayloadIterImpl_init (&iter, impl);
+
+    // Iterate over all fields
+    while (NULL != omnmmsgPayloadIter_next(iterOpaque, NULL, msg))
+    {
+        count++;
+    }
+    *numFields = count;
+
+    return MAMA_STATUS_OK;
 }
 
 mama_status
@@ -431,7 +458,10 @@ omnmmsgPayload_iterateFields (const msgPayload    msg,
     mamaMsgFieldImpl*   mamaField       = (mamaMsgFieldImpl*) field;
     msgFieldPayload     fieldPayload    = NULL;
 
-    if (NULL == msg) return MAMA_STATUS_NULL_ARG;
+    if (NULL == msg || NULL == parent || NULL == cb || NULL == field)
+    {
+        return MAMA_STATUS_NULL_ARG;
+    }
 
     // This is really just for type casting so we can easily use bridge
     // iterator methods directly
@@ -495,8 +525,8 @@ omnmmsgPayload_getByteBuffer (const msgPayload  msg,
                               const void**      buffer,
                               mama_size_t*      bufferLength)
 {
-
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    if (NULL == msg || NULL == buffer || NULL == bufferLength) return MAMA_STATUS_NULL_ARG;
+    return omnmmsgPayload_serialize (msg, buffer, bufferLength);
 }
 
 /*
@@ -509,6 +539,8 @@ omnmmsgPayload_setByteBuffer (const msgPayload    msg,
                               const void*         buffer,
                               mama_size_t         bufferLength)
 {
+    if (NULL == msg || NULL == buffer) return MAMA_STATUS_NULL_ARG;
+    if (0 == bufferLength) return MAMA_STATUS_INVALID_ARG;
     return omnmmsgPayload_unSerialize (msg, (const void**)buffer, bufferLength);
 }
 
@@ -518,7 +550,8 @@ omnmmsgPayload_createFromByteBuffer (msgPayload*         msg,
                                      const void*         buffer,
                                      mama_size_t         bufferLength)
 {
-    if (NULL == msg) return MAMA_STATUS_NULL_ARG;
+    if (NULL == msg || NULL == buffer) return MAMA_STATUS_NULL_ARG;
+    if (0 == bufferLength) return MAMA_STATUS_INVALID_ARG;
     omnmmsgPayload_create (msg);
     return omnmmsgPayload_unSerialize (*msg, (const void**)buffer, bufferLength);
 }
@@ -750,7 +783,12 @@ mama_status
 omnmmsgPayload_getNativeMsg (const msgPayload    msg,
                              void**              nativeMsg)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    if (NULL == msg || NULL == nativeMsg)
+    {
+        return MAMA_STATUS_NULL_ARG;
+    }
+    *nativeMsg = (void*) msg;
+    return MAMA_STATUS_OK;
 }
 
 mama_status
@@ -760,7 +798,14 @@ omnmmsgPayload_getFieldAsString (const msgPayload    msg,
                                  char*               buffer,
                                  mama_size_t         len)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    omnmFieldImpl targetField;
+    memset (&targetField, 0, sizeof(targetField));
+    if (NULL == msg) return MAMA_STATUS_NULL_ARG;
+    ((OmnmPayloadImpl*) msg)->getField(name, fid, targetField);
+    return omnmmsgFieldPayload_getAsString (&targetField,
+                                            msg,
+                                            buffer,
+                                            len);
 }
 
 mama_status

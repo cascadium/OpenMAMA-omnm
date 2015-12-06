@@ -40,6 +40,7 @@ typedef struct omnmIterImpl
     OmnmPayloadImpl*    mMsg;   /* Original message being covered */
     omnmFieldImpl       mField; /* Reusable inline field impl*/
     uint8_t*            mBufferPosition;
+    int                 mIndex;
 } omnmIterImpl;
 
 /**
