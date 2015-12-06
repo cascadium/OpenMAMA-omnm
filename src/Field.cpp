@@ -466,7 +466,41 @@ mama_status
 omnmmsgFieldPayload_getDateTime (const msgFieldPayload   field,
                                  mamaDateTime            result)
 {
-    FIELD_GET_SCALAR (field, result);
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
+    omnmFieldImpl* impl = (omnmFieldImpl*) field;
+    mama_status status = MAMA_STATUS_OK;
+    switch (impl->mFieldType)
+    {
+    case MAMA_FIELD_TYPE_TIME:
+    {
+        *result = *((mama_u64_t*)impl->mData);
+        break;
+    }
+    case MAMA_FIELD_TYPE_STRING:
+    {
+        status = mamaDateTime_setFromString (result, (const char*)impl->mData);
+        break;
+    }
+    case MAMA_FIELD_TYPE_F64:
+    {
+       status = mamaDateTime_setEpochTimeF64 (result, *((mama_f64_t*)impl->mData));
+        break;
+    }
+    case MAMA_FIELD_TYPE_I64:
+    {
+        status = mamaDateTime_setEpochTimeMilliseconds (result, *((mama_i64_t*)impl->mData));
+        break;
+    }
+    case MAMA_FIELD_TYPE_U64:
+    {
+        status = mamaDateTime_setEpochTimeMicroseconds (result, *((mama_u64_t*)impl->mData));
+        break;
+    }
+    default:
+        return MAMA_STATUS_WRONG_FIELD_TYPE;
+        break;
+    }
+    return status;
 }
 
 mama_status

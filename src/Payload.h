@@ -165,8 +165,8 @@ public:
     // the free space in the remaining buffer lives
     size_t      mPayloadBufferTail;
 
-    struct omnmFieldImpl mField;
-    mamaMsg mParent;
+    omnmFieldImpl mField;
+    mamaMsg       mParent;
 private:
     // Find the field inside the buffer and populate provided field with its
     // location

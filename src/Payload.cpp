@@ -1624,7 +1624,13 @@ omnmmsgPayload_getDateTime (const msgPayload    msg,
                             mamaDateTime        result)
 {
     if (NULL == msg || NULL == result) return MAMA_STATUS_NULL_ARG;
-    return ((OmnmPayloadImpl*) msg)->getField(MAMA_FIELD_TYPE_TIME, name, fid, result);
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
+    mama_status status = impl->getField (name, fid, impl->mField);
+    if (MAMA_STATUS_OK != status)
+    {
+        return status;
+    }
+    return omnmmsgFieldPayload_getDateTime ((const msgFieldPayload)&impl->mField, result);
 }
 
 mama_status
