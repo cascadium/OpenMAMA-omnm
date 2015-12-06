@@ -1302,7 +1302,7 @@ omnmmsgPayload_updatePrice (msgPayload          msg,
                             const mamaPrice     value)
 {
     if (NULL == msg || NULL == value) return MAMA_STATUS_NULL_ARG;
-    return ((OmnmPayloadImpl*) msg)->updateField (MAMA_FIELD_TYPE_STRING, name, fid, (uint8_t*)value, sizeof(mama_price_t));
+    return ((OmnmPayloadImpl*) msg)->updateField (MAMA_FIELD_TYPE_PRICE, name, fid, (uint8_t*)value, sizeof(mama_price_t));
 }
 
 mama_status

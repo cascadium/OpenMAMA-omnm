@@ -121,6 +121,7 @@ public:
     mama_status
     getField(const char* name, mama_fid_t fid, omnmFieldImpl& field)
     {
+        VALIDATE_NAME_FID(name, fid);
         mama_status status = this->findFieldInBuffer (name, fid, field);
         if (MAMA_STATUS_OK != status)
         {
