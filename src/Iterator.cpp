@@ -80,8 +80,11 @@ omnmmsgPayloadIter_next (msgPayloadIter          iter,
 {
     omnmIterImpl*   impl    = (omnmIterImpl*) iter;
 
+    if (NULL == iter || NULL == msg)
+        return NULL;
+
     // If the current buffer iterator position is at or past the end
-    if (impl->mMsg->mPayloadBuffer + impl->mMsg->mPayloadBufferTail <= impl->mBufferPosition)
+    if (! omnmmsgPayloadIter_hasNext(iter, msg))
     {
         return NULL;
     }
@@ -174,8 +177,17 @@ omnmmsgPayloadIter_next (msgPayloadIter          iter,
     case MAMA_FIELD_TYPE_UNKNOWN:
         break;
     }
-    /* Move buffer position to move past content */
-    impl->mBufferPosition += impl->mField.mSize;
+
+    if (0 == impl->mIndex)
+    {
+        /* Start iterating just after the message type byte */
+        impl->mBufferPosition = impl->mMsg->mPayloadBuffer + 1;
+    }
+    else
+    {
+        impl->mBufferPosition += impl->mField.mSize;
+    }
+    impl->mIndex++;
 
     return &impl->mField;
 }
@@ -184,7 +196,18 @@ mama_bool_t
 omnmmsgPayloadIter_hasNext (msgPayloadIter          iter,
                             msgPayload              msg)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    omnmIterImpl*   impl    = (omnmIterImpl*) iter;
+    if (NULL == iter || NULL == msg) return 0;
+
+    // If the current buffer iterator position is at or past the end
+    if (impl->mMsg->mPayloadBuffer + impl->mMsg->mPayloadBufferTail <= impl->mBufferPosition)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
 }
 
 msgFieldPayload
@@ -192,13 +215,20 @@ omnmmsgPayloadIter_begin (msgPayloadIter          iter,
                           msgFieldPayload         field,
                           msgPayload              msg)
 {
-    omnmIterImpl* impl = (omnmIterImpl*) iter;
+    omnmIterImpl*   impl       = (omnmIterImpl*) iter;
+    msgFieldPayload firstField = NULL;
+
+    if (NULL == iter || NULL == msg) return NULL;
+
     impl->mMsg         = (OmnmPayloadImpl*)msg;
+    impl->mIndex       = 0;
 
     /* Start iterating just after the message type byte */
     impl->mBufferPosition = impl->mMsg->mPayloadBuffer + 1;
 
-    return NULL;
+    firstField = omnmmsgPayloadIter_next (iter, field, msg);
+
+    return firstField;
 }
 
 /*
@@ -216,6 +246,7 @@ mama_status
 omnmmsgPayloadIter_associate (msgPayloadIter          iter,
                               msgPayload              msg)
 {
+    if (NULL == iter || NULL == msg) return MAMA_STATUS_NULL_ARG;
     // Reset iterator position and couple
     omnmmsgPayloadIter_begin (iter, NULL, msg);
     return MAMA_STATUS_OK;
@@ -224,6 +255,7 @@ omnmmsgPayloadIter_associate (msgPayloadIter          iter,
 mama_status
 omnmmsgPayloadIter_destroy (msgPayloadIter iter)
 {
+    if (NULL == iter) return MAMA_STATUS_NULL_ARG;
     free (iter);
     return MAMA_STATUS_OK;
 }
