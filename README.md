@@ -31,7 +31,7 @@ maybe correct later:
 * Doesn't support any vector data types
 * Doesn't support sub messages
 * Doesn't support toString functionality
-* Doesn't support binary data types
+* Doesn't support binary / opaque data types
 
 If you really want to overcome these limitations, let me know or feel free to
 contribute an implementation yourself.
@@ -55,12 +55,15 @@ The bridge depends on:
 * MAMA / OpenMAMA
 * Scons
 
-Until dynamic bridge loading is supported, you will also need to build against
-my github fork of OpenMAMA (https://github.com/fquinner/OpenMAMA) on the
-`feature-omzmq` branch which contains the payload name and enum.
-I will add the enum upstream at some point in the future too, but I plan on
-using this bridge to help test the dynamic loading, so I'll not add the enum
-to OpenMAMA master until that is ready.
+As of the latest version of OpenMAMA, there is no longer a requirement to
+build this library off my own special fork of OpenMAMA. Instead thanks to
+dynamic bridge loading support, you can now build this off:
+
+* The next branch of OpenMAMA
+* The OpenMAMA-2.4.0 branch of OpenMAMA
+
+The master branch will also contain the correct changes once the next OpenMAMA
+GA release is issued which is expected within the next couple of weeks.
 
 ### Building
 
@@ -72,8 +75,10 @@ straightforward:
 ## Usage Instructions
 
 After building, you will have a `libmamaomnmmsgimpl.so` library created. Add the
-directory containing this library to your `LD_LIBRARY_PATH` and set the macro
-property USE_OMNMSG to 1 in bridge.c for the ZeroMQ bridge.
+directory containing this library to your `LD_LIBRARY_PATH` and set the
+following property in your `mama.properties` configuration file:
+
+    mama.payload.default=omnmmsg
 
 ## Related Projects
 
