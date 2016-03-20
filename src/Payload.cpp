@@ -51,6 +51,7 @@
 #define        FID_WIDTH               2
 #define        LENGTH_WIDTH            4
 #define        DEFAULT_PAYLOAD_SIZE    200
+#define        MAMA_PAYLOAD_ID_OMNM    'O'
 
 #define UPDATE_SCALAR_FIELD(SUFFIX,MAMATYPE)                                   \
 do                                                                             \
@@ -82,7 +83,7 @@ OmnmPayloadImpl::OmnmPayloadImpl() : mPayloadBuffer(NULL),
     mPayloadBuffer     = (uint8_t*) calloc (mPayloadBufferSize, 1);
 
     // First byte always contains payload type - populate and move past
-    *((uint8_t*)mPayloadBuffer) = MAMA_PAYLOAD_OMNM;
+    *((uint8_t*)mPayloadBuffer) = MAMA_PAYLOAD_ID_OMNM;
     mPayloadBufferTail++;
 }
 
@@ -262,36 +263,23 @@ OmnmPayloadImpl::updateField (omnmFieldImpl& field, uint8_t* buffer,
   =========================================================================*/
 
 mama_status
-omnmmsgPayload_createImpl (mamaPayloadBridge* result, char* identifier)
+omnmmsgPayload_init (mamaPayloadBridge bridge, char* identifier)
 {
-    mamaPayloadBridgeImpl* impl = NULL;
+    *identifier = (char)MAMA_PAYLOAD_ID_OMNM;
 
-    impl = (mamaPayloadBridgeImpl*) calloc (1, sizeof (mamaPayloadBridgeImpl));
-
-    if (NULL == impl)
-    {
-        mama_log (MAMA_LOG_LEVEL_SEVERE, "qpidmsgPayload_createImpl(): "
-                  "Could not allocate memory for payload impl.");
-        return MAMA_STATUS_NOMEM;
-    }
-
-    /* Use closure to store global data for payload bridge if required */
-    impl->mClosure = NULL;
-
-    /* Initialize the virtual function table (see payloadbridge.h) */
-    INITIALIZE_PAYLOAD_BRIDGE (impl, omnmmsg);
-
-    *result     = (mamaPayloadBridge)impl;
-    *identifier = (char)MAMA_PAYLOAD_OMNM;
+    /* Will set the bridge's compile time MAMA version */
+    MAMA_SET_BRIDGE_COMPILE_TIME_VERSION("omnmmsg");
 
     return MAMA_STATUS_OK;
 }
 
+MAMAIgnoreDeprecatedOpen
 mamaPayloadType
 omnmmsgPayload_getType (void)
 {
-    return MAMA_PAYLOAD_OMNM;
+    return (mamaPayloadType)MAMA_PAYLOAD_ID_OMNM;
 }
+MAMAIgnoreDeprecatedClose
 
 mama_status
 omnmmsgPayload_create (msgPayload* msg)
