@@ -1,5 +1,7 @@
 # OpenMAMA Native Message (OMNM)
 
+[![Join the chat at https://gitter.im/fquinner/OpenMAMA-omnm](https://badges.gitter.im/fquinner/OpenMAMA-omnm.svg)](https://gitter.im/fquinner/OpenMAMA-omnm?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ## Overview
 
 Pronounced *ominum* (because it's fun to say), this is the OpenMAMA Native
