@@ -141,12 +141,11 @@ public:
                  const char*    name,
                  mama_fid_t     fid,
                  uint8_t*       buffer,
-                 size_t         bufferLen,
-                 bool           variableWidth = false);
+                 size_t         bufferLen);
 
     // Update payload field according to the type and values provided
     mama_status
-    updateField (mamaFieldType  type,
+    updateField (mamaFieldType   type,
                  const char*     name,
                  mama_fid_t      fid,
                  uint8_t*        buffer,
@@ -157,6 +156,10 @@ public:
     updateField (struct omnmFieldImpl&  field,
                  uint8_t*               buffer,
                  size_t                 bufferLen);
+
+    // Update payload field according to the field and values provided
+    bool
+    isFieldTypeSized (mamaFieldType type);
 
     // Clear the payload
     mama_status clear ();

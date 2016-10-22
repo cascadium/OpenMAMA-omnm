@@ -173,6 +173,7 @@ omnmmsgPayloadIter_next (msgPayloadIter          iter,
         impl->mField.mSize = *((mama_u32_t*)impl->mBufferPosition);
         /* 32 bit field size is variable - skip over its position */
         impl->mBufferPosition += sizeof(mama_u32_t);
+        /* Note the data starts *after* the size field */
         impl->mField.mData = (void*)impl->mBufferPosition;
         break;
     case MAMA_FIELD_TYPE_UNKNOWN:
