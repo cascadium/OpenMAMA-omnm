@@ -87,7 +87,7 @@ do                                                                             \
     omnmFieldImpl* impl = (omnmFieldImpl*)FIELD;                               \
     if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;          \
     if (NULL == impl->mData) return MAMA_STATUS_INVALID_ARG;                   \
-    return impl->mParent->getField (*impl, RESULT);                            \
+    return impl->mParent->getFieldValueAsCopy (*impl, RESULT);                 \
 } while (0)
 
 /*=========================================================================

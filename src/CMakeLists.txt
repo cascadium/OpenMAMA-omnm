@@ -9,6 +9,8 @@ if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 endif()
 
 link_directories(${MAMA_ROOT}/lib)
+link_directories(${MAMA_ROOT}/lib/dynamic)
+link_directories(${MAMA_ROOT}/lib/dynamic-debug)
 
 add_definitions(-DBRIDGE -DMAMA_DLL)
 

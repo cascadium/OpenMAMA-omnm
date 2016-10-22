@@ -169,10 +169,11 @@ omnmmsgPayloadIter_next (msgPayloadIter          iter,
     case MAMA_FIELD_TYPE_VECTOR_U32:
     case MAMA_FIELD_TYPE_VECTOR_U64:
     case MAMA_FIELD_TYPE_VECTOR_U8:
+        /* All these field types start with a U32 detailing the message size in bytes */
         impl->mField.mSize = *((mama_u32_t*)impl->mBufferPosition);
-        impl->mField.mData = (void*) impl->mBufferPosition;
         /* 32 bit field size is variable - skip over its position */
         impl->mBufferPosition += sizeof(mama_u32_t);
+        impl->mField.mData = (void*)impl->mBufferPosition;
         break;
     case MAMA_FIELD_TYPE_UNKNOWN:
         break;

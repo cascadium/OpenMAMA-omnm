@@ -56,9 +56,12 @@ public:
     ~OmnmPayloadImpl();
 
     // Templatized function for casting buffers to data types by lookup
+    // Receives type, fid and name as an argument and returns pointer to data
+    // Contains typs as additional thing that may possibly be verified. Might
+    // end up removing this function
     template<typename T>
     mama_status
-    getField(mamaFieldType type, const char* name, mama_fid_t fid, T* s)
+    getFieldValueAsCopy(mamaFieldType type, const char *name, mama_fid_t fid, T *s)
     {
         omnmFieldImpl field;
         VALIDATE_NAME_FID(name, fid);
@@ -68,13 +71,14 @@ public:
             return MAMA_STATUS_NOT_FOUND;
         }
         // Call known based templatized function
-        return getField(field, s);
+        return getFieldValueAsCopy (field, s);
     }
 
     // Templatized function for casting buffers to data types by known field
+    // Receives field with fid and name as an argument and returns pointer to data
     template<typename T>
     mama_status
-    getField(struct omnmFieldImpl& field, T* s)
+    getFieldValueAsCopy(struct omnmFieldImpl &field, T *s)
     {
         VALIDATE_NAME_FID(field.mName, field.mFid);
         memset (s, 0, sizeof(T));
@@ -92,7 +96,7 @@ public:
     // Templatized function for casting buffers to data types by lookup
     template<typename T>
     mama_status
-    getField(mamaFieldType type, const char* name, mama_fid_t fid, T** s)
+    getFieldValueAsBuffer(mamaFieldType type, const char *name, mama_fid_t fid, T **s)
     {
         omnmFieldImpl field;
         VALIDATE_NAME_FID(name, fid);
@@ -103,13 +107,13 @@ public:
         }
 
         // Call known based templatized function
-        return getField(field, s);
+        return getFieldValueAsBuffer(field, s);
     }
 
     // Templatized function for casting buffers to data types by known field
     template<typename T>
     mama_status
-    getField(omnmFieldImpl& field, T** s)
+    getFieldValueAsBuffer(omnmFieldImpl &field, T **s)
     {
         VALIDATE_NAME_FID(field.mName, field.mFid);
         // If data type is a pointer, simply point it to the data buffer
