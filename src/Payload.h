@@ -141,7 +141,8 @@ public:
                  const char*    name,
                  mama_fid_t     fid,
                  uint8_t*       buffer,
-                 size_t         bufferLen);
+                 size_t         bufferLen,
+                 bool           variableWidth = false);
 
     // Update payload field according to the type and values provided
     mama_status
