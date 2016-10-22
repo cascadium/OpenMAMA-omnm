@@ -81,13 +81,31 @@ do                                                                             \
     snprintf (buffer, len, "}");                                               \
 } while (0)
 
-#define FIELD_GET_SCALAR(FIELD,RESULT)                                         \
+#define GET_SCALAR_FIELD(FIELD,RESULT)                                         \
 do                                                                             \
 {                                                                              \
     omnmFieldImpl* impl = (omnmFieldImpl*)FIELD;                               \
     if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;          \
     if (NULL == impl->mData) return MAMA_STATUS_INVALID_ARG;                   \
     return impl->mParent->getFieldValueAsCopy (*impl, RESULT);                 \
+} while (0)
+
+#define GET_SCALAR_VECTOR(FIELD,RESULT,SIZE,TYPE)                              \
+do                                                                             \
+{                                                                              \
+    mama_status status = MAMA_STATUS_OK;                                       \
+    omnmFieldImpl* impl = (omnmFieldImpl*)FIELD;                               \
+                                                                               \
+    if (NULL == FIELD || NULL == RESULT || NULL == SIZE)                       \
+        return MAMA_STATUS_NULL_ARG;                                           \
+                                                                               \
+    if (MAMA_STATUS_OK == status)                                              \
+    {                                                                          \
+        *size = impl->mSize / (sizeof(TYPE));                                  \
+        *result = (TYPE*) impl->mData;                                         \
+    }                                                                          \
+                                                                               \
+    return status;                                                             \
 } while (0)
 
 /*=========================================================================
@@ -363,91 +381,91 @@ mama_status
 omnmmsgFieldPayload_getBool (const msgFieldPayload   field,
                              mama_bool_t*            result)
 {
-    FIELD_GET_SCALAR (field, result);
+    GET_SCALAR_FIELD (field, result);
 }
 
 mama_status
 omnmmsgFieldPayload_getChar (const msgFieldPayload   field,
                              char*                   result)
 {
-    FIELD_GET_SCALAR (field, result);
+    GET_SCALAR_FIELD (field, result);
 }
 
 mama_status
 omnmmsgFieldPayload_getI8   (const msgFieldPayload   field,
                              mama_i8_t*              result)
 {
-    FIELD_GET_SCALAR (field, result);
+    GET_SCALAR_FIELD (field, result);
 }
 
 mama_status
 omnmmsgFieldPayload_getU8   (const msgFieldPayload   field,
                              mama_u8_t*              result)
 {
-    FIELD_GET_SCALAR (field, result);
+    GET_SCALAR_FIELD (field, result);
 }
 
 mama_status
 omnmmsgFieldPayload_getI16  (const msgFieldPayload   field,
                              mama_i16_t*             result)
 {
-    FIELD_GET_SCALAR (field, result);
+    GET_SCALAR_FIELD (field, result);
 }
 
 mama_status
 omnmmsgFieldPayload_getU16  (const msgFieldPayload   field,
                              mama_u16_t*            result)
 {
-    FIELD_GET_SCALAR (field, result);
+    GET_SCALAR_FIELD (field, result);
 }
 
 mama_status
 omnmmsgFieldPayload_getI32  (const msgFieldPayload   field,
                              mama_i32_t*             result)
 {
-    FIELD_GET_SCALAR (field, result);
+    GET_SCALAR_FIELD (field, result);
 }
 
 mama_status
 omnmmsgFieldPayload_getU32  (const msgFieldPayload   field,
                              mama_u32_t*             result)
 {
-    FIELD_GET_SCALAR (field, result);
+    GET_SCALAR_FIELD (field, result);
 }
 
 mama_status
 omnmmsgFieldPayload_getI64  (const msgFieldPayload   field,
                              mama_i64_t*             result)
 {
-    FIELD_GET_SCALAR (field, result);
+    GET_SCALAR_FIELD (field, result);
 }
 
 mama_status
 omnmmsgFieldPayload_getU64  (const msgFieldPayload   field,
                              mama_u64_t*             result)
 {
-    FIELD_GET_SCALAR (field, result);
+    GET_SCALAR_FIELD (field, result);
 }
 
 mama_status
 omnmmsgFieldPayload_getF32  (const msgFieldPayload   field,
                              mama_f32_t*             result)
 {
-    FIELD_GET_SCALAR (field, result);
+    GET_SCALAR_FIELD (field, result);
 }
 
 mama_status
 omnmmsgFieldPayload_getF64  (const msgFieldPayload   field,
                              mama_f64_t*             result)
 {
-    FIELD_GET_SCALAR (field, result);
+    GET_SCALAR_FIELD (field, result);
 }
 
 mama_status
 omnmmsgFieldPayload_getString (const msgFieldPayload   field,
                                const char**            result)
 {
-    FIELD_GET_SCALAR (field, result);
+    GET_SCALAR_FIELD (field, result);
 }
 
 mama_status
@@ -507,7 +525,7 @@ mama_status
 omnmmsgFieldPayload_getPrice (const msgFieldPayload   field,
                               mamaPrice               result)
 {
-    FIELD_GET_SCALAR (field, (mama_price_t*)result);
+    GET_SCALAR_FIELD (field, (mama_price_t*)result);
 }
 
 /*
@@ -526,7 +544,7 @@ omnmmsgFieldPayload_getVectorBool (const msgFieldPayload   field,
                                    const mama_bool_t**     result,
                                    mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    GET_SCALAR_VECTOR (field, result, size, mama_bool_t);
 }
 
 mama_status
@@ -534,7 +552,7 @@ omnmmsgFieldPayload_getVectorChar (const msgFieldPayload   field,
                                    const char**            result,
                                    mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    GET_SCALAR_VECTOR (field, result, size, char);
 }
 
 mama_status
@@ -542,7 +560,7 @@ omnmmsgFieldPayload_getVectorI8   (const msgFieldPayload   field,
                                    const mama_i8_t**       result,
                                    mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    GET_SCALAR_VECTOR (field, result, size, mama_i8_t);
 }
 
 mama_status
@@ -550,7 +568,7 @@ omnmmsgFieldPayload_getVectorU8   (const msgFieldPayload   field,
                                    const mama_u8_t**       result,
                                    mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    GET_SCALAR_VECTOR (field, result, size, mama_u8_t);
 }
 
 mama_status
@@ -558,7 +576,7 @@ omnmmsgFieldPayload_getVectorI16  (const msgFieldPayload   field,
                                    const mama_i16_t**      result,
                                    mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    GET_SCALAR_VECTOR (field, result, size, mama_i16_t);
 }
 
 mama_status
@@ -566,7 +584,7 @@ omnmmsgFieldPayload_getVectorU16  (const msgFieldPayload   field,
                                    const mama_u16_t**      result,
                                    mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    GET_SCALAR_VECTOR (field, result, size, mama_u16_t);
 }
 
 mama_status
@@ -575,7 +593,7 @@ omnmmsgFieldPayload_getVectorI32  (const msgFieldPayload   field,
                                    mama_size_t*            size)
 {
 
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    GET_SCALAR_VECTOR (field, result, size, mama_i32_t);
 }
 
 mama_status
@@ -583,7 +601,7 @@ omnmmsgFieldPayload_getVectorU32  (const msgFieldPayload   field,
                                    const mama_u32_t**      result,
                                    mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    GET_SCALAR_VECTOR (field, result, size, mama_u32_t);
 }
 
 mama_status
@@ -591,7 +609,7 @@ omnmmsgFieldPayload_getVectorI64  (const msgFieldPayload   field,
                                    const mama_i64_t**      result,
                                    mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    GET_SCALAR_VECTOR (field, result, size, mama_i64_t);
 }
 
 mama_status
@@ -599,7 +617,7 @@ omnmmsgFieldPayload_getVectorU64  (const msgFieldPayload   field,
                                    const mama_u64_t**      result,
                                    mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    GET_SCALAR_VECTOR (field, result, size, mama_u64_t);
 }
 
 mama_status
@@ -607,7 +625,7 @@ omnmmsgFieldPayload_getVectorF32  (const msgFieldPayload   field,
                                    const mama_f32_t**      result,
                                    mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    GET_SCALAR_VECTOR (field, result, size, mama_f32_t);
 }
 
 mama_status
@@ -615,7 +633,7 @@ omnmmsgFieldPayload_getVectorF64  (const msgFieldPayload   field,
                                    const mama_f64_t**      result,
                                    mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    GET_SCALAR_VECTOR (field, result, size, mama_f64_t);
 }
 
 mama_status
