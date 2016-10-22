@@ -1468,7 +1468,7 @@ omnmmsgPayload_updateVectorChar (msgPayload          msg,
                                  const char          value[],
                                  mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    UPDATE_SCALAR_VECTOR(msg, name, fid, (mama_bool_t*)value, size, char);
 }
 
 mama_status
@@ -1478,7 +1478,7 @@ omnmmsgPayload_updateVectorI8   (msgPayload          msg,
                                  const mama_i8_t     value[],
                                  mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    UPDATE_SCALAR_VECTOR(msg, name, fid, (mama_bool_t*)value, size, mama_i8_t);
 }
 
 mama_status
@@ -1488,7 +1488,7 @@ omnmmsgPayload_updateVectorU8   (msgPayload          msg,
                                  const mama_u8_t     value[],
                                  mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    UPDATE_SCALAR_VECTOR(msg, name, fid, (mama_bool_t*)value, size, mama_u8_t);
 }
 
 mama_status
@@ -1498,7 +1498,7 @@ omnmmsgPayload_updateVectorI16  (msgPayload          msg,
                                  const mama_i16_t    value[],
                                  mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    UPDATE_SCALAR_VECTOR(msg, name, fid, (mama_bool_t*)value, size, mama_i16_t);
 }
 
 mama_status
@@ -1508,7 +1508,7 @@ omnmmsgPayload_updateVectorU16  (msgPayload          msg,
                                  const mama_u16_t    value[],
                                  mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    UPDATE_SCALAR_VECTOR(msg, name, fid, (mama_bool_t*)value, size, mama_u16_t);
 }
 
 mama_status
@@ -1518,7 +1518,7 @@ omnmmsgPayload_updateVectorI32  (msgPayload          msg,
                                  const mama_i32_t    value[],
                                  mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    UPDATE_SCALAR_VECTOR(msg, name, fid, (mama_bool_t*)value, size, mama_i32_t);
 }
 
 mama_status
@@ -1528,7 +1528,7 @@ omnmmsgPayload_updateVectorU32  (msgPayload          msg,
                                  const mama_u32_t    value[],
                                  mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    UPDATE_SCALAR_VECTOR(msg, name, fid, (mama_bool_t*)value, size, mama_u32_t);
 }
 
 mama_status
@@ -1538,7 +1538,7 @@ omnmmsgPayload_updateVectorI64  (msgPayload          msg,
                                  const mama_i64_t    value[],
                                  mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    UPDATE_SCALAR_VECTOR(msg, name, fid, (mama_bool_t*)value, size, mama_i64_t);
 }
 
 mama_status
@@ -1548,7 +1548,7 @@ omnmmsgPayload_updateVectorU64  (msgPayload          msg,
                                  const mama_u64_t    value[],
                                  mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    UPDATE_SCALAR_VECTOR(msg, name, fid, (mama_bool_t*)value, size, mama_u64_t);
 }
 
 mama_status
@@ -1558,7 +1558,7 @@ omnmmsgPayload_updateVectorF32  (msgPayload          msg,
                                  const mama_f32_t    value[],
                                  mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    UPDATE_SCALAR_VECTOR(msg, name, fid, (mama_bool_t*)value, size, mama_f32_t);
 }
 
 mama_status
@@ -1568,7 +1568,7 @@ omnmmsgPayload_updateVectorF64  (msgPayload          msg,
                                  const mama_f64_t    value[],
                                  mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    UPDATE_SCALAR_VECTOR(msg, name, fid, (mama_bool_t*)value, size, mama_f64_t);
 }
 
 mama_status
