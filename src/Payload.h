@@ -48,6 +48,12 @@ typedef struct omnmFieldImpl
     uint32_t            mSize;
     void*               mData;
     OmnmPayloadImpl*    mParent;
+    /* Complex data type elements below */
+    msgPayload          mSubPayload;
+    const char**        mVectorString;
+    mama_size_t         mVectorStringLen;
+    msgPayload*         mVectorPayload;
+    mama_size_t         mVectorPayloadLen;
 } omnmFieldImpl;
 
 class OmnmPayloadImpl {

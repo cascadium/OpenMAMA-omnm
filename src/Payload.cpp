@@ -1170,7 +1170,13 @@ omnmmsgPayload_addOpaque (msgPayload  msg,
                           const void* opaque,
                           mama_size_t size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
+    if (NULL == impl || NULL == opaque) return MAMA_STATUS_NULL_ARG;
+    return impl->addField (MAMA_FIELD_TYPE_OPAQUE,
+                           name,
+                           fid,
+                           (uint8_t*)opaque,
+                           size);
 }
 
 mama_status
@@ -1199,7 +1205,17 @@ omnmmsgPayload_addMsg (msgPayload  msg,
                        mama_fid_t  fid,
                        msgPayload  value)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
+    const void* buffer = NULL;
+    mama_size_t bufferLen = 0;
+
+    omnmmsgPayload_serialize (value, &buffer, &bufferLen);
+
+    return impl->addField (MAMA_FIELD_TYPE_MSG,
+                           name,
+                           fid,
+                           (uint8_t*)buffer,
+                           bufferLen);
 }
 
 mama_status
@@ -1495,7 +1511,12 @@ omnmmsgPayload_updateOpaque (msgPayload          msg,
                              const void*         opaque,
                              mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    if (NULL == msg || NULL == opaque) return MAMA_STATUS_NULL_ARG;
+    return ((OmnmPayloadImpl*) msg)->updateField (MAMA_FIELD_TYPE_OPAQUE,
+                                                  name,
+                                                  fid,
+                                                  (uint8_t*)opaque,
+                                                  size);
 }
 
 mama_status
@@ -1522,9 +1543,20 @@ mama_status
 omnmmsgPayload_updateSubMsg (msgPayload          msg,
                              const char*         name,
                              mama_fid_t          fid,
-                             const msgPayload    subMsg)
+                             const msgPayload    value)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    if (NULL == msg || NULL == value) return MAMA_STATUS_NULL_ARG;
+
+    const void* buffer = NULL;
+    mama_size_t bufferLen = 0;
+
+    omnmmsgPayload_serialize (value, &buffer, &bufferLen);
+
+    return ((OmnmPayloadImpl*) msg)->updateField (MAMA_FIELD_TYPE_MSG,
+                                                  name,
+                                                  fid,
+                                                  (uint8_t*)buffer,
+                                                  bufferLen);
 }
 
 mama_status
@@ -1816,7 +1848,7 @@ omnmmsgPayload_getString (const msgPayload    msg,
                           const char**        result)
 {
     if (NULL == msg || NULL == result) return MAMA_STATUS_NULL_ARG;
-    return ((OmnmPayloadImpl *) msg)->getFieldValueAsBuffer(MAMA_FIELD_TYPE_STRING, name, fid, result);
+    return ((OmnmPayloadImpl *) msg)->getFieldValueAsBuffer (MAMA_FIELD_TYPE_STRING, name, fid, result);
 }
 
 mama_status
@@ -1826,8 +1858,16 @@ omnmmsgPayload_getOpaque (const msgPayload    msg,
                           const void**        result,
                           mama_size_t*        size)
 {
+    omnmFieldImpl field;
+    mama_status status;
     if (NULL == msg || NULL == result || NULL == size) return MAMA_STATUS_NULL_ARG;
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    status = ((OmnmPayloadImpl *) msg)->getField (name, fid, field);
+    if (MAMA_STATUS_OK == status)
+    {
+        *result = (void*) field.mData;
+        *size = (mama_size_t) field.mSize;
+    }
+    return status;
 }
 
 mama_status
@@ -1862,7 +1902,14 @@ omnmmsgPayload_getMsg (const msgPayload    msg,
                        mama_fid_t          fid,
                        msgPayload*         result)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl *) msg;
+    const void* buffer = NULL;
+    mama_size_t bufferLen = 0;
+    if (NULL == msg || NULL == result) return MAMA_STATUS_NULL_ARG;
+
+    impl->getField (name, fid, impl->mField);
+
+    return omnmmsgFieldPayload_getMsg ((msgFieldPayload)&impl->mField, result);
 }
 
 mama_status

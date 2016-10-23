@@ -473,7 +473,16 @@ mama_status
 omnmmsgFieldPayload_getString (const msgFieldPayload   field,
                                const char**            result)
 {
-    GET_SCALAR_FIELD (field, result, MAMA_FIELD_TYPE_STRING);
+    omnmFieldImpl* impl = (omnmFieldImpl*)field;
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
+    if (NULL == impl->mData) return MAMA_STATUS_INVALID_ARG;
+    if (MAMA_FIELD_TYPE_STRING != impl->mFieldType &&
+        false == OmnmPayloadImpl::areFieldTypesCastable(impl->mFieldType, MAMA_FIELD_TYPE_STRING))
+    {
+        return MAMA_STATUS_WRONG_FIELD_TYPE;
+    }
+
+    return impl->mParent->getFieldValueAsBuffer (*impl, result);
 }
 
 mama_status
@@ -481,7 +490,16 @@ omnmmsgFieldPayload_getOpaque (const msgFieldPayload   field,
                                const void**            result,
                                mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    omnmFieldImpl* impl = (omnmFieldImpl*)field;
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
+    if (NULL == impl->mData) return MAMA_STATUS_INVALID_ARG;
+    if (MAMA_FIELD_TYPE_OPAQUE != impl->mFieldType &&
+        false == OmnmPayloadImpl::areFieldTypesCastable(impl->mFieldType, MAMA_FIELD_TYPE_OPAQUE))
+    {
+        return MAMA_STATUS_WRONG_FIELD_TYPE;
+    }
+
+    return impl->mParent->getFieldValueAsBuffer (*impl, result);
 }
 
 /*
@@ -536,15 +554,31 @@ omnmmsgFieldPayload_getPrice (const msgFieldPayload   field,
     GET_SCALAR_FIELD (field, (mama_price_t*)result, MAMA_FIELD_TYPE_PRICE);
 }
 
-/*
- * NOTE: the MAMA method which calls this lesser-used function contains a memory
- * leak as a parent message is created and then never freed.
- */
 mama_status
 omnmmsgFieldPayload_getMsg (const msgFieldPayload   field,
                             msgPayload*             result)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    mama_status status;
+    const void* buffer = NULL;
+    mama_size_t bufferLen = 0;
+    omnmFieldImpl* impl = (omnmFieldImpl*)field;
+
+    if (NULL == impl->mSubPayload)
+    {
+        status = omnmmsgPayload_createFromByteBuffer (&impl->mSubPayload,
+                                                      NULL,
+                                                      impl->mData,
+                                                      impl->mSize);
+    }
+    else
+    {
+        status = omnmmsgPayload_setByteBuffer (impl->mSubPayload,
+                                               NULL,
+                                               impl->mData,
+                                               impl->mSize);
+    }
+    *result = impl->mSubPayload;
+    return status;
 }
 
 mama_status
@@ -692,7 +726,6 @@ omnmmsgFieldPayload_getAsString       (const msgFieldPayload   field,
                                        mama_size_t             len)
 {
     mama_status status = MAMA_STATUS_OK;
-
     omnmFieldImpl* impl = (omnmFieldImpl*)field;
 
     if (NULL == buffer || NULL == field)
