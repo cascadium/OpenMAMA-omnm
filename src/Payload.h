@@ -153,13 +153,20 @@ public:
 
     // Update payload field according to the field and values provided
     mama_status
-    updateField (struct omnmFieldImpl&  field,
+    updateField (mamaFieldType          type,
+                 struct omnmFieldImpl&  field,
                  uint8_t*               buffer,
                  size_t                 bufferLen);
 
     // Update payload field according to the field and values provided
-    bool
+    static bool
     isFieldTypeSized (mamaFieldType type);
+
+    static bool
+    isFieldTypeFixedWidth (mamaFieldType type);
+
+    static bool
+    areFieldTypesCastable (mamaFieldType from, mamaFieldType to);
 
     // Clear the payload
     mama_status clear ();
