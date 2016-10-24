@@ -33,6 +33,7 @@
 #include <mama/mama.h>
 #include <mama/price.h>
 #include <priceimpl.h>
+#include <wombat/memnode.h>
 
 #include "payloadbridge.h"
 #include "msgfieldimpl.h"
@@ -351,7 +352,6 @@ omnmmsgFieldPayload_updateString(msgFieldPayload         field,
 {
     omnmFieldImpl* impl = (omnmFieldImpl*) field;
     if (NULL == impl || NULL == msg) return MAMA_STATUS_NULL_ARG;
-    if (MAMA_FIELD_TYPE_STRING != impl->mFieldType) return MAMA_STATUS_WRONG_FIELD_TYPE;
     return impl->mParent->updateField (MAMA_FIELD_TYPE_STRING,
                                        *impl,
                                        (uint8_t*)str,
@@ -551,7 +551,30 @@ mama_status
 omnmmsgFieldPayload_getPrice (const msgFieldPayload   field,
                               mamaPrice               result)
 {
-    GET_SCALAR_FIELD (field, (mama_price_t*)result, MAMA_FIELD_TYPE_PRICE);
+    omnmFieldImpl* impl = (omnmFieldImpl*)field;
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
+    if (NULL == impl->mData) return MAMA_STATUS_INVALID_ARG;
+
+    switch(impl->mFieldType)
+    {
+        case MAMA_FIELD_TYPE_PRICE:
+        {
+            return impl->mParent->getFieldValueAsCopy (*impl, (mama_price_t*) result);
+            break;
+        }
+        case MAMA_FIELD_TYPE_F64:
+        {
+            mama_f64_t value = 0;
+            mama_status status = omnmmsgFieldPayload_getF64 (field, &value);
+            if (MAMA_STATUS_OK != status) return status;
+            mamaPrice_setValue (result, value);
+            return MAMA_STATUS_OK;
+            break;
+        }
+        default:
+            return MAMA_STATUS_WRONG_FIELD_TYPE;
+            break;
+    }  
 }
 
 mama_status
@@ -562,6 +585,9 @@ omnmmsgFieldPayload_getMsg (const msgFieldPayload   field,
     const void* buffer = NULL;
     mama_size_t bufferLen = 0;
     omnmFieldImpl* impl = (omnmFieldImpl*)field;
+    if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
+    if (NULL == impl->mData) return MAMA_STATUS_INVALID_ARG;
+    if (MAMA_FIELD_TYPE_MSG != impl->mFieldType) return MAMA_STATUS_WRONG_FIELD_TYPE;
 
     if (NULL == impl->mSubPayload)
     {
@@ -683,7 +709,37 @@ omnmmsgFieldPayload_getVectorString (const msgFieldPayload   field,
                                      const char***           result,
                                      mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    omnmFieldImpl* impl = (omnmFieldImpl*)field;
+    size_t stringCount = 0, i = 0, j=0;
+
+    VALIDATE_NON_NULL(field);
+    VALIDATE_NON_NULL(result);
+    VALIDATE_NON_NULL(size);
+
+    for(i = 0; i < impl->mSize; i++)
+    {
+        if (((char*)impl->mData)[i] == '\0')
+            stringCount++;
+    }
+
+    *size = stringCount;
+
+    // Ensure the buffer is big enough for this
+    allocateBufferMemory ((void**)&impl->mVectorString,
+                          (size_t*)&impl->mVectorStringLen,
+                          sizeof(char*) * stringCount);
+
+    /* NB - i++ will add null character on each iteration */
+    for(i = 0; i < impl->mSize; i++)
+    {
+        impl->mVectorString[j] = ((char*)impl->mData) + i;
+        i += strlen(impl->mVectorString[j]);
+        j++;
+    }
+
+    *result = impl->mVectorString;
+
+    return MAMA_STATUS_OK;
 }
 
 /*

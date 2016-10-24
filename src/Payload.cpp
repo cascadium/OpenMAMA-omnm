@@ -53,6 +53,7 @@
 #define        DEFAULT_PAYLOAD_SIZE    200
 #define        MAMA_PAYLOAD_ID_OMNM    'O'
 
+
 #define ADD_SCALAR_FIELD(MSG,NAME,FID,VALUE,TYPE)                              \
 do                                                                             \
 {                                                                              \
@@ -155,10 +156,11 @@ do                                                                             \
   =                  Private implementation prototypes                    =
   =========================================================================*/
 
-
 OmnmPayloadImpl::OmnmPayloadImpl() : mPayloadBuffer(NULL),
                                      mPayloadBufferSize(0),
-                                     mPayloadBufferTail(0)
+                                     mPayloadBufferTail(0),
+                                     mField({}), /* Inline struct member */
+                                     mParent(NULL)
 {
     mPayloadBufferSize = DEFAULT_PAYLOAD_SIZE;
     mPayloadBuffer     = (uint8_t*) calloc (mPayloadBufferSize, 1);
@@ -1032,7 +1034,7 @@ omnmmsgPayload_getFieldAsString (const msgPayload    msg,
 {
     omnmFieldImpl targetField;
     memset (&targetField, 0, sizeof(targetField));
-    if (NULL == msg) return MAMA_STATUS_NULL_ARG;
+    VALIDATE_NON_NULL(msg);
     ((OmnmPayloadImpl*) msg)->getField(name, fid, targetField);
     return omnmmsgFieldPayload_getAsString (&targetField,
                                             msg,
@@ -1046,6 +1048,7 @@ omnmmsgPayload_addBool (msgPayload  msg,
                         mama_fid_t  fid,
                         mama_bool_t value)
 {
+    VALIDATE_NON_NULL(msg);
     ADD_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_BOOL);
 }
 
@@ -1055,6 +1058,7 @@ omnmmsgPayload_addChar (msgPayload  msg,
                         mama_fid_t  fid,
                         char        value)
 {
+    VALIDATE_NON_NULL(msg);
     ADD_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_CHAR);
 }
 
@@ -1064,6 +1068,7 @@ omnmmsgPayload_addI8   (msgPayload  msg,
                         mama_fid_t  fid,
                         mama_i8_t   value)
 {
+    VALIDATE_NON_NULL(msg);
     ADD_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I8);
 }
 
@@ -1073,6 +1078,7 @@ omnmmsgPayload_addU8   (msgPayload  msg,
                         mama_fid_t  fid,
                         mama_u8_t   value)
 {
+    VALIDATE_NON_NULL(msg);
     ADD_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U8);
 }
 
@@ -1082,6 +1088,7 @@ omnmmsgPayload_addI16  (msgPayload  msg,
                         mama_fid_t  fid,
                         mama_i16_t  value)
 {
+    VALIDATE_NON_NULL(msg);
     ADD_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I16);
 }
 
@@ -1091,6 +1098,7 @@ omnmmsgPayload_addU16  (msgPayload  msg,
                         mama_fid_t  fid,
                         mama_u16_t  value)
 {
+    VALIDATE_NON_NULL(msg);
     ADD_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U16);
 }
 
@@ -1100,6 +1108,7 @@ omnmmsgPayload_addI32  (msgPayload  msg,
                         mama_fid_t  fid,
                         mama_i32_t  value)
 {
+    VALIDATE_NON_NULL(msg);
     ADD_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I32);
 }
 
@@ -1109,6 +1118,7 @@ omnmmsgPayload_addU32  (msgPayload  msg,
                         mama_fid_t  fid,
                         mama_u32_t  value)
 {
+    VALIDATE_NON_NULL(msg);
     ADD_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U32);
 }
 
@@ -1118,6 +1128,7 @@ omnmmsgPayload_addI64  (msgPayload  msg,
                         mama_fid_t  fid,
                         mama_i64_t  value)
 {
+    VALIDATE_NON_NULL(msg);
     ADD_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I64);
 }
 
@@ -1127,6 +1138,7 @@ omnmmsgPayload_addU64  (msgPayload  msg,
                         mama_fid_t  fid,
                         mama_u64_t  value)
 {
+    VALIDATE_NON_NULL(msg);
     ADD_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U64);
 }
 
@@ -1136,6 +1148,7 @@ omnmmsgPayload_addF32  (msgPayload  msg,
                         mama_fid_t  fid,
                         mama_f32_t  value)
 {
+    VALIDATE_NON_NULL(msg);
     ADD_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_F32);
 }
 
@@ -1145,6 +1158,7 @@ omnmmsgPayload_addF64  (msgPayload  msg,
                         mama_fid_t  fid,
                         mama_f64_t  value)
 {
+    VALIDATE_NON_NULL(msg);
     ADD_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_F64);
 }
 
@@ -1154,6 +1168,7 @@ omnmmsgPayload_addString (msgPayload  msg,
                           mama_fid_t  fid,
                           const char* str)
 {
+    VALIDATE_NON_NULL(msg);
     OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
     if (NULL == impl || NULL == str) return MAMA_STATUS_NULL_ARG;
     return impl->addField (MAMA_FIELD_TYPE_STRING,
@@ -1170,6 +1185,7 @@ omnmmsgPayload_addOpaque (msgPayload  msg,
                           const void* opaque,
                           mama_size_t size)
 {
+    VALIDATE_NON_NULL(msg);
     OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
     if (NULL == impl || NULL == opaque) return MAMA_STATUS_NULL_ARG;
     return impl->addField (MAMA_FIELD_TYPE_OPAQUE,
@@ -1185,8 +1201,8 @@ omnmmsgPayload_addDateTime (msgPayload          msg,
                             mama_fid_t          fid,
                             const mamaDateTime  value)
 {
-    if (NULL == msg || NULL == value) return MAMA_STATUS_NULL_ARG;
-    return ((OmnmPayloadImpl*) msg)->addField (MAMA_FIELD_TYPE_TIME, name, fid, (uint8_t*)value, sizeof(*value));
+    VALIDATE_NON_NULL(msg);
+    return ((OmnmPayloadImpl*) msg)->addField (MAMA_FIELD_TYPE_TIME, name, fid, (uint8_t*)value, sizeof(mamaDateTime));
 }
 
 mama_status
@@ -1195,7 +1211,7 @@ omnmmsgPayload_addPrice (msgPayload      msg,
                          mama_fid_t      fid,
                          const mamaPrice value)
 {
-    if (NULL == msg || NULL == value) return MAMA_STATUS_NULL_ARG;
+    VALIDATE_NON_NULL(msg);
     return ((OmnmPayloadImpl*) msg)->addField (MAMA_FIELD_TYPE_PRICE, name, fid, (uint8_t*)value, sizeof(mama_price_t));
 }
 
@@ -1208,8 +1224,16 @@ omnmmsgPayload_addMsg (msgPayload  msg,
     OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
     const void* buffer = NULL;
     mama_size_t bufferLen = 0;
+    mama_status status;
 
-    omnmmsgPayload_serialize (value, &buffer, &bufferLen);
+    VALIDATE_NON_NULL(msg);
+    VALIDATE_NON_NULL(value);
+
+    status = omnmmsgPayload_serialize (value, &buffer, &bufferLen);
+    if (MAMA_STATUS_OK != status)
+    {
+        return status;
+    }
 
     return impl->addField (MAMA_FIELD_TYPE_MSG,
                            name,
@@ -1345,7 +1369,35 @@ omnmmsgPayload_addVectorString (msgPayload          msg,
                                 const char*         value[],
                                 mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
+    size_t bytesRequired = 0, i = 0;
+    VALIDATE_NAME_FID(name, fid);
+    VALIDATE_NON_NULL(msg);
+    VALIDATE_NON_NULL(value);
+
+    for (i = 0; i < size; i++)
+    {
+        bytesRequired += strlen(value[i]) + 1;
+    }
+
+    // Ensure the buffer is big enough for this
+    allocateBufferMemory ((void**)&impl->mField.mBuffer,
+                          &impl->mField.mBufferLen,
+                          bytesRequired);
+
+    uint8_t* target = (uint8_t*)impl->mField.mBuffer;
+    for (i = 0; i < size; i++)
+    {
+        size_t copyLen = strlen(value[i]) + 1;
+        memcpy(target, value[i], copyLen);
+        target += copyLen;
+    }
+
+    return ((OmnmPayloadImpl*) msg)->addField (MAMA_FIELD_TYPE_VECTOR_STRING,
+                                               name,
+                                               fid,
+                                               (uint8_t*)impl->mField.mBuffer,
+                                               impl->mField.mBufferLen);
 }
 
 mama_status
@@ -1392,7 +1444,7 @@ omnmmsgPayload_updateBool   (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_bool_t  value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_BOOL);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_BOOL, Bool);
 }
 
 mama_status
@@ -1401,7 +1453,7 @@ omnmmsgPayload_updateChar   (msgPayload   msg,
                              mama_fid_t   fid,
                              char         value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_CHAR);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_CHAR, Char);
 }
 
 mama_status
@@ -1410,7 +1462,7 @@ omnmmsgPayload_updateI8     (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_i8_t    value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I8);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I8, I8);
 }
 
 mama_status
@@ -1419,7 +1471,7 @@ omnmmsgPayload_updateU8     (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_u8_t    value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U8);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U8, U8);
 }
 
 mama_status
@@ -1428,7 +1480,7 @@ omnmmsgPayload_updateI16    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_i16_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I16);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I16, I16);
 }
 
 mama_status
@@ -1437,7 +1489,7 @@ omnmmsgPayload_updateU16    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_u16_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U16);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U16, U16);
 }
 
 mama_status
@@ -1446,7 +1498,7 @@ omnmmsgPayload_updateI32    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_i32_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I32);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I32, I32);
 }
 
 mama_status
@@ -1455,7 +1507,7 @@ omnmmsgPayload_updateU32    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_u32_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U32);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U32, U32);
 }
 
 mama_status
@@ -1464,7 +1516,7 @@ omnmmsgPayload_updateI64    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_i64_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I64);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I64, I64);
 }
 
 mama_status
@@ -1473,7 +1525,7 @@ omnmmsgPayload_updateU64    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_u64_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U64);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U64, U64);
 }
 
 mama_status
@@ -1482,7 +1534,7 @@ omnmmsgPayload_updateF32    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_f32_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_F32);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_F32, F32);
 }
 
 mama_status
@@ -1491,7 +1543,7 @@ omnmmsgPayload_updateF64    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_f64_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_F64);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_F64, F64);
 }
 
 mama_status
@@ -1576,7 +1628,35 @@ omnmmsgPayload_updateVectorString (msgPayload   msg,
                                    const char*  value[],
                                    mama_size_t  size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
+    size_t bytesRequired = 0, i = 0;
+    VALIDATE_NAME_FID(name, fid);
+    VALIDATE_NON_NULL(msg);
+    VALIDATE_NON_NULL(value);
+
+    for (i = 0; i < size; i++)
+    {
+        bytesRequired += strlen(value[i]) + 1;
+    }
+
+    // Ensure the buffer is big enough for this
+    allocateBufferMemory ((void**)&impl->mField.mBuffer,
+                          &impl->mField.mBufferLen,
+                          bytesRequired);
+
+    uint8_t* target = (uint8_t*)impl->mField.mBuffer;
+    for (i = 0; i < size; i++)
+    {
+        size_t copyLen = strlen(value[i]) + 1;
+        memcpy(target, value[i], copyLen);
+        target += copyLen;
+    }
+
+    return ((OmnmPayloadImpl*) msg)->updateField (MAMA_FIELD_TYPE_VECTOR_STRING,
+                                                  name,
+                                                  fid,
+                                                  (uint8_t*)impl->mField.mBuffer,
+                                                  bytesRequired);
 }
 
 mama_status
@@ -1606,7 +1686,7 @@ omnmmsgPayload_updateVectorI8   (msgPayload          msg,
                                  const mama_i8_t     value[],
                                  mama_size_t         size)
 {
-    UPDATE_SCALAR_VECTOR(msg, name, fid, (mama_bool_t*)value, size, mama_i8_t, MAMA_FIELD_TYPE_VECTOR_CHAR);
+    UPDATE_SCALAR_VECTOR(msg, name, fid, (mama_bool_t*)value, size, mama_i8_t, MAMA_FIELD_TYPE_VECTOR_I8);
 }
 
 mama_status
@@ -1786,7 +1866,7 @@ omnmmsgPayload_getI32  (const msgPayload    msg,
                         mama_fid_t          fid,
                         mama_i32_t*         result)
 {
-    if (NULL == msg || NULL == result) return MAMA_STATUS_NULL_ARG;
+    if (NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((OmnmPayloadImpl *) msg)->getFieldValueAsCopy(MAMA_FIELD_TYPE_I32, name, fid, result);
 }
 
@@ -1796,7 +1876,7 @@ omnmmsgPayload_getU32  (const msgPayload    msg,
                         mama_fid_t          fid,
                         mama_u32_t*         result)
 {
-    if (NULL == msg || NULL == result) return MAMA_STATUS_NULL_ARG;
+    if (NULL == msg) return MAMA_STATUS_NULL_ARG;
     return ((OmnmPayloadImpl *) msg)->getFieldValueAsCopy(MAMA_FIELD_TYPE_U32, name, fid, result);
 }
 
@@ -1892,8 +1972,10 @@ omnmmsgPayload_getPrice (const msgPayload    msg,
                          mama_fid_t          fid,
                          mamaPrice           result)
 {
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl *) msg;
     if (NULL == msg || NULL == result) return MAMA_STATUS_NULL_ARG;
-    return ((OmnmPayloadImpl *) msg)->getFieldValueAsCopy(MAMA_FIELD_TYPE_PRICE, name, fid, (mama_price_t *) result);
+    impl->getField (name, fid, impl->mField);
+    return omnmmsgFieldPayload_getPrice (&impl->mField, result);
 }
 
 mama_status
@@ -2039,7 +2121,16 @@ omnmmsgPayload_getVectorString (const msgPayload    msg,
                                 const char***       result,
                                 mama_size_t*        size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl *) msg;
+    VALIDATE_NAME_FID(name, fid);
+    VALIDATE_NON_NULL(msg);
+
+    /* populate field with result */
+    mama_status status = impl->getField (name, fid, impl->mField);
+
+    if (MAMA_STATUS_OK != status) return status;
+
+    return omnmmsgFieldPayload_getVectorString ((const msgFieldPayload)&impl->mField, result, size);
 }
 
 mama_status
@@ -2080,6 +2171,7 @@ omnmmsgPayload_getField (const msgPayload    msg,
 {
     if (NULL == msg || NULL == result) return MAMA_STATUS_NULL_ARG;
     OmnmPayloadImpl* impl = ((OmnmPayloadImpl*) msg);
+
     mama_status status = impl->getField (name, fid, impl->mField);
 
     *result = (msgFieldPayload) &impl->mField;

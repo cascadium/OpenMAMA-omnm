@@ -31,6 +31,13 @@
 
 class OmnmPayloadImpl;
 
+#define VALIDATE_MAMA_STATUS_OK(STATUS)                                        \
+do                                                                             \
+{                                                                              \
+    if (MAMA_STATUS_OK != STATUS)                                              \
+        return STATUS;                                                         \
+} while (0)
+
 #define VALIDATE_NAME_FID(NAME, FID)                                           \
 do                                                                             \
 {                                                                              \
@@ -40,15 +47,24 @@ do                                                                             \
         return MAMA_STATUS_INVALID_ARG;                                        \
 } while (0)
 
+#define VALIDATE_NON_NULL(VALUE)                                               \
+do                                                                             \
+{                                                                              \
+    if (NULL == VALUE)                                                         \
+        return MAMA_STATUS_NULL_ARG;                                           \
+} while (0)
+
 typedef struct omnmFieldImpl
 {
     mamaFieldType       mFieldType;
     mama_fid_t          mFid;
     const char*         mName;
-    uint32_t            mSize;
-    void*               mData;
+    size_t              mSize;
+    void*               mData; /* never alloc'ed memory - always reference */
     OmnmPayloadImpl*    mParent;
     /* Complex data type elements below */
+    void*               mBuffer; /* Reusable buffer for temporary data */
+    mama_size_t         mBufferLen; /* Reusable buffer for temporary data */
     msgPayload          mSubPayload;
     const char**        mVectorString;
     mama_size_t         mVectorStringLen;
@@ -69,8 +85,9 @@ public:
     mama_status
     getFieldValueAsCopy(mamaFieldType type, const char *name, mama_fid_t fid, T *s)
     {
-        omnmFieldImpl field;
         VALIDATE_NAME_FID(name, fid);
+        VALIDATE_NON_NULL(s);
+        omnmFieldImpl field;
         mama_status status = findFieldInBuffer (name, fid, field);
         if (MAMA_STATUS_OK != status)
         {
@@ -87,6 +104,7 @@ public:
     getFieldValueAsCopy(struct omnmFieldImpl &field, T *s)
     {
         VALIDATE_NAME_FID(field.mName, field.mFid);
+        VALIDATE_NON_NULL(s);
         memset (s, 0, sizeof(T));
 
         // If size on wire doesn't match requested size, return error
@@ -106,6 +124,7 @@ public:
     {
         omnmFieldImpl field;
         VALIDATE_NAME_FID(name, fid);
+        VALIDATE_NON_NULL(s);
         mama_status status = findFieldInBuffer (name, fid, field);
         if (MAMA_STATUS_OK != status)
         {
@@ -122,6 +141,7 @@ public:
     getFieldValueAsBuffer(omnmFieldImpl &field, T **s)
     {
         VALIDATE_NAME_FID(field.mName, field.mFid);
+        VALIDATE_NON_NULL(s);
         // If data type is a pointer, simply point it to the data buffer
         *s = ((T*) field.mData);
 
@@ -178,14 +198,14 @@ public:
     mama_status clear ();
 
     // Underlying buffer to store the payload
-    uint8_t*    mPayloadBuffer;
+    uint8_t*      mPayloadBuffer;
 
     // This really reflects the capacity of mPayloadBuffer
-    size_t      mPayloadBufferSize;
+    size_t        mPayloadBufferSize;
 
     // Tail always points to the end of the 'useful' part of the buffer, where
     // the free space in the remaining buffer lives
-    size_t      mPayloadBufferTail;
+    size_t        mPayloadBufferTail;
 
     omnmFieldImpl mField;
     mamaMsg       mParent;
