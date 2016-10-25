@@ -772,7 +772,56 @@ omnmmsgFieldPayload_getVectorMsg      (const msgFieldPayload   field,
                                        const msgPayload**      result,
                                        mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    omnmFieldImpl* impl = (omnmFieldImpl*)field;
+    size_t msgCount = 0, i = 0, j = 0;
+    mama_status status;
+
+    VALIDATE_NON_NULL(field);
+    VALIDATE_NON_NULL(result);
+    VALIDATE_NON_NULL(size);
+
+    for(i = 0; i < impl->mSize;)
+    {
+        mama_size_t payloadLen = (mama_size_t) *(mama_u32_t*)impl->mData;
+        i += payloadLen + sizeof(mama_u32_t);
+        msgCount++;
+    }
+
+    *size = msgCount;
+
+    // Ensure the buffer is big enough for this
+    allocateBufferMemory ((void**)&impl->mVectorPayload,
+                          (size_t*)&impl->mVectorPayloadLen,
+                          sizeof(char*) * msgCount);
+
+    /* NB - i++ will add null character on each iteration */
+    for(i = 0; i < impl->mSize;)
+    {
+        mama_size_t payloadLen = (mama_size_t) *(mama_u32_t*)impl->mData;
+        uint8_t* payload = ((uint8_t*) impl->mData) + i + sizeof(mama_u32_t);
+
+        if (NULL == impl->mVectorPayload[j])
+        {
+            status = omnmmsgPayload_createFromByteBuffer (&impl->mVectorPayload[j],
+                                                          NULL,
+                                                          payload,
+                                                          payloadLen);
+        }
+        else
+        {
+            status = omnmmsgPayload_setByteBuffer (impl->mVectorPayload[j],
+                                                   NULL,
+                                                   payload,
+                                                   payloadLen);
+        }
+
+        i += payloadLen + sizeof(mama_u32_t);
+        j++;
+    }
+
+    *result = impl->mVectorPayload;
+
+    return status;
 }
 
 mama_status

@@ -1407,7 +1407,7 @@ omnmmsgPayload_addVectorMsg (msgPayload          msg,
                              const mamaMsg       value[],
                              mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    return omnmmsgPayload_updateVectorMsg (msg,  name, fid, value, size);
 }
 
 /*
@@ -1618,7 +1618,43 @@ omnmmsgPayload_updateVectorMsg (msgPayload          msg,
                                 const mamaMsg       value[],
                                 mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
+    size_t bytesRequired = 0, i = 0;
+    VALIDATE_NAME_FID(name, fid);
+    VALIDATE_NON_NULL(msg);
+    VALIDATE_NON_NULL(value);
+
+    for (i = 0; i < size; i++)
+    {
+        mama_size_t msgSize = 0;
+        mamaMsg_getByteSize(value[i], &msgSize);
+        bytesRequired += msgSize + sizeof(mama_u32_t);
+    }
+
+    // Ensure the buffer is big enough for this
+    allocateBufferMemory ((void**)&impl->mField.mBuffer,
+                          &impl->mField.mBufferLen,
+                          bytesRequired);
+
+    uint8_t* target = (uint8_t*)impl->mField.mBuffer;
+    for (i = 0; i < size; i++)
+    {
+        const void* buffer = NULL;
+        mama_size_t bufferLen = 0;
+        mamaMsg_getByteBuffer(value[i], &buffer, &bufferLen);
+
+        /* Put size of each message before each message */
+        memcpy((void*)target, &bufferLen, sizeof(mama_u32_t));
+        target = target + sizeof(mama_u32_t);
+        memcpy((void*)target, buffer, bufferLen);
+        target += bufferLen;
+    }
+
+    return ((OmnmPayloadImpl*) msg)->updateField (MAMA_FIELD_TYPE_VECTOR_MSG,
+                                                  name,
+                                                  fid,
+                                                  (uint8_t*)impl->mField.mBuffer,
+                                                  bytesRequired);
 }
 
 mama_status
@@ -2160,7 +2196,16 @@ omnmmsgPayload_getVectorMsg (const msgPayload    msg,
                              const msgPayload**  result,
                              mama_size_t*        size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl *) msg;
+    VALIDATE_NAME_FID(name, fid);
+    VALIDATE_NON_NULL(msg);
+
+    /* populate field with result */
+    mama_status status = impl->getField (name, fid, impl->mField);
+
+    if (MAMA_STATUS_OK != status) return status;
+
+    return omnmmsgFieldPayload_getVectorMsg (&impl->mField, result, size);
 }
 
 mama_status
