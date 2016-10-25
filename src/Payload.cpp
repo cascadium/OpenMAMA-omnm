@@ -656,9 +656,15 @@ omnmmsgPayload_toString (const msgPayload msg)
     omnmIterImpl        iter;
     OmnmPayloadImpl*    impl            = (OmnmPayloadImpl*) msg;
     msgFieldPayload     fieldPayload    = NULL;
+    mama_size_t         numFields       = NULL;
+    mama_size_t         stringCapacity  = 0;
+    mama_size_t         charIdx         = 0; /* Opening Brace */
+    int                 fieldIdx        = 0;
     char                part[1024];
 
     if (NULL == msg) return NULL;
+
+    omnmmsgPayload_getNumFields (msg, &numFields);
 
     // This is really just for type casting so we can easily use bridge
     // iterator methods directly
@@ -667,17 +673,55 @@ omnmmsgPayload_toString (const msgPayload msg)
     // Initialize the iterator for this message
     omnmmsgPayloadIterImpl_init (&iter, impl);
 
+    if (0 != allocateBufferMemory ((void**) &impl->mField.mBuffer,
+                                   &impl->mField.mBufferLen,
+                                   sizeof(part)))
+    {
+        return NULL;
+    }
+
+    charIdx += sprintf ((char*)impl->mField.mBuffer + charIdx, "{");
+
     // Iterate over all fields
     while (NULL != (fieldPayload = omnmmsgPayloadIter_next(iterOpaque, NULL, msg)))
     {
         // TODO: actually build the string
-        mama_fid_t      fid = 0;
-        const char*     fname = NULL;
-        omnmmsgFieldPayload_getAsString(fieldPayload, impl, part, sizeof(part));
-        omnmmsgFieldPayload_getFid(fieldPayload, NULL, NULL, &fid);
+        mama_fid_t      fid           = 0;
+        const char*     fname         = NULL;
+        mama_size_t     bytesInString = 0;
+
+        omnmmsgFieldPayload_getAsString (fieldPayload, impl, part, sizeof(part));
+        omnmmsgFieldPayload_getFid (fieldPayload, NULL, NULL, &fid);
         omnmmsgFieldPayload_getName (fieldPayload, NULL, NULL, &fname);
+
+        bytesInString = strlenEx(fname) + strlen(part) + 10;
+
+        if (0 != allocateBufferMemory ((void**) &impl->mField.mBuffer,
+                                       &impl->mField.mBufferLen,
+                                       bytesInString + charIdx))
+        {
+            return NULL;
+        }
+
+        if (0 == fieldIdx)
+        {
+            
+            charIdx += sprintf ((char*)impl->mField.mBuffer + charIdx,
+                                "%s[%u]=%s",
+                                fname ? fname : "",
+                                fid,
+                                part);
+        }
+
+        if (omnmmsgPayloadIter_hasNext (iterOpaque, msg))
+        {
+            charIdx += sprintf((char*)impl->mField.mBuffer + charIdx, ",");
+        }
     }
-    return NULL;
+
+    charIdx += sprintf((char*)impl->mField.mBuffer + charIdx, "}");
+
+    return (const char*) impl->mField.mBuffer;
 }
 
 mama_status
