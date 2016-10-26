@@ -601,8 +601,6 @@ omnmmsgFieldPayload_getMsg (const msgFieldPayload   field,
                             msgPayload*             result)
 {
     mama_status status;
-    const void* buffer = NULL;
-    mama_size_t bufferLen = 0;
     omnmFieldImpl* impl = (omnmFieldImpl*)field;
     if (NULL == field || NULL == result) return MAMA_STATUS_NULL_ARG;
     if (NULL == impl->mData) return MAMA_STATUS_INVALID_ARG;
@@ -772,7 +770,7 @@ omnmmsgFieldPayload_getVectorDateTime (const msgFieldPayload   field,
 {
     omnmFieldImpl* impl = (omnmFieldImpl*)field;
     omnmDateTime* rawDateTimes;
-    size_t count = 0, i = 0, j = 0;
+    size_t count = 0, i = 0;
 
     VALIDATE_NON_NULL(field);
     VALIDATE_NON_NULL(result);
@@ -815,7 +813,7 @@ omnmmsgFieldPayload_getVectorPrice    (const msgFieldPayload   field,
 {
     omnmFieldImpl* impl = (omnmFieldImpl*)field;
     omnmPrice* rawPrices;
-    size_t count = 0, i = 0, j = 0;
+    size_t count = 0, i = 0;
 
     VALIDATE_NON_NULL(field);
     VALIDATE_NON_NULL(result);
@@ -859,7 +857,7 @@ omnmmsgFieldPayload_getVectorMsg      (const msgFieldPayload   field,
 {
     omnmFieldImpl* impl = (omnmFieldImpl*)field;
     size_t msgCount = 0, i = 0, j = 0;
-    mama_status status;
+    mama_status status = MAMA_STATUS_OK;
 
     VALIDATE_NON_NULL(field);
     VALIDATE_NON_NULL(result);

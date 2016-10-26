@@ -221,6 +221,7 @@ OmnmPayloadImpl::isFieldTypeSized (mamaFieldType   type)
         case MAMA_FIELD_TYPE_VECTOR_U64:
         case MAMA_FIELD_TYPE_VECTOR_U8:
         case MAMA_FIELD_TYPE_UNKNOWN:
+        default:
             return true;
             break;
     }
@@ -269,6 +270,7 @@ OmnmPayloadImpl::isFieldTypeFixedWidth (mamaFieldType type)
         case MAMA_FIELD_TYPE_VECTOR_U64:
         case MAMA_FIELD_TYPE_VECTOR_U8:
         case MAMA_FIELD_TYPE_UNKNOWN:
+        default:
             return false;
             break;
     }
@@ -706,8 +708,7 @@ omnmmsgPayload_toString (const msgPayload msg)
     omnmIterImpl        iter;
     OmnmPayloadImpl*    impl            = (OmnmPayloadImpl*) msg;
     msgFieldPayload     fieldPayload    = NULL;
-    mama_size_t         numFields       = NULL;
-    mama_size_t         stringCapacity  = 0;
+    mama_size_t         numFields       = 0;
     mama_size_t         charIdx         = 0; /* Opening Brace */
     int                 fieldIdx        = 0;
     char                part[1024];
@@ -1528,7 +1529,7 @@ omnmmsgPayload_updateBool   (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_bool_t  value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_BOOL, Bool);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_BOOL);
 }
 
 mama_status
@@ -1537,7 +1538,7 @@ omnmmsgPayload_updateChar   (msgPayload   msg,
                              mama_fid_t   fid,
                              char         value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_CHAR, Char);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_CHAR);
 }
 
 mama_status
@@ -1546,7 +1547,7 @@ omnmmsgPayload_updateI8     (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_i8_t    value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I8, I8);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I8);
 }
 
 mama_status
@@ -1555,7 +1556,7 @@ omnmmsgPayload_updateU8     (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_u8_t    value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U8, U8);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U8);
 }
 
 mama_status
@@ -1564,7 +1565,7 @@ omnmmsgPayload_updateI16    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_i16_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I16, I16);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I16);
 }
 
 mama_status
@@ -1573,7 +1574,7 @@ omnmmsgPayload_updateU16    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_u16_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U16, U16);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U16);
 }
 
 mama_status
@@ -1582,7 +1583,7 @@ omnmmsgPayload_updateI32    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_i32_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I32, I32);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I32);
 }
 
 mama_status
@@ -1591,7 +1592,7 @@ omnmmsgPayload_updateU32    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_u32_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U32, U32);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U32);
 }
 
 mama_status
@@ -1600,7 +1601,7 @@ omnmmsgPayload_updateI64    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_i64_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I64, I64);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_I64);
 }
 
 mama_status
@@ -1609,7 +1610,7 @@ omnmmsgPayload_updateU64    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_u64_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U64, U64);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_U64);
 }
 
 mama_status
@@ -1618,7 +1619,7 @@ omnmmsgPayload_updateF32    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_f32_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_F32, F32);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_F32);
 }
 
 mama_status
@@ -1627,7 +1628,7 @@ omnmmsgPayload_updateF64    (msgPayload   msg,
                              mama_fid_t   fid,
                              mama_f64_t   value)
 {
-    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_F64, F64);
+    UPDATE_SCALAR_FIELD(msg, name, fid, value, MAMA_FIELD_TYPE_F64);
 }
 
 mama_status
@@ -2173,8 +2174,6 @@ omnmmsgPayload_getMsg (const msgPayload    msg,
                        msgPayload*         result)
 {
     OmnmPayloadImpl* impl = (OmnmPayloadImpl *) msg;
-    const void* buffer = NULL;
-    mama_size_t bufferLen = 0;
     if (NULL == msg || NULL == result) return MAMA_STATUS_NULL_ARG;
 
     impl->getField (name, fid, impl->mField);
