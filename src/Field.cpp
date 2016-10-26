@@ -365,7 +365,16 @@ omnmmsgFieldPayload_updateDateTime
                                 const mamaDateTime      value)
 {
     if (NULL == field || NULL == msg || NULL == value) return MAMA_STATUS_NULL_ARG;
-    return ((omnmFieldImpl*)field)->mParent->updateField(MAMA_FIELD_TYPE_TIME, *((omnmFieldImpl*)field), (uint8_t*)value, sizeof(*value));
+
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*)msg;
+    omnmDateTime dateTime;
+
+    OmnmPayloadImpl::convertMamaDateTimeToOmnmDateTime(value, &dateTime);
+
+    return impl->updateField (MAMA_FIELD_TYPE_TIME,
+                              *((omnmFieldImpl*)field),
+                              (uint8_t*)&dateTime,
+                              sizeof(dateTime));
 }
 
 mama_status
@@ -374,7 +383,16 @@ omnmmsgFieldPayload_updatePrice (msgFieldPayload         field,
                                  const mamaPrice         value)
 {
     if (NULL == field || NULL == msg || NULL == value) return MAMA_STATUS_NULL_ARG;
-    return ((omnmFieldImpl*)field)->mParent->updateField(MAMA_FIELD_TYPE_PRICE, *((omnmFieldImpl*)field), (uint8_t*)value, sizeof(mama_price_t));
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*)msg;
+    omnmPrice price;
+
+    OmnmPayloadImpl::convertMamaPriceToOmnmPrice(value, &price);
+
+    return impl->updateField(MAMA_FIELD_TYPE_PRICE,
+        *((omnmFieldImpl*)field),
+        (uint8_t*)&price,
+        sizeof(price));
+
 }
 
 mama_status
@@ -517,7 +535,7 @@ omnmmsgFieldPayload_getDateTime (const msgFieldPayload   field,
     {
     case MAMA_FIELD_TYPE_TIME:
     {
-        *result = *((mama_u64_t*)impl->mData);
+        OmnmPayloadImpl::convertOmnmDateTimeToMamaDateTime((omnmDateTime*)impl->mData, result);
         break;
     }
     case MAMA_FIELD_TYPE_STRING:
@@ -559,7 +577,8 @@ omnmmsgFieldPayload_getPrice (const msgFieldPayload   field,
     {
         case MAMA_FIELD_TYPE_PRICE:
         {
-            return impl->mParent->getFieldValueAsCopy (*impl, (mama_price_t*) result);
+            OmnmPayloadImpl::convertOmnmPriceToMamaPrice((omnmPrice*)impl->mData, result);
+            return MAMA_STATUS_OK;
             break;
         }
         case MAMA_FIELD_TYPE_F64:
@@ -748,22 +767,88 @@ omnmmsgFieldPayload_getVectorString (const msgFieldPayload   field,
  */
 mama_status
 omnmmsgFieldPayload_getVectorDateTime (const msgFieldPayload   field,
-                                       const mamaDateTime*     result,
+                                       const mamaDateTime**    result,
                                        mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    omnmFieldImpl* impl = (omnmFieldImpl*)field;
+    omnmDateTime* rawDateTimes;
+    size_t count = 0, i = 0, j = 0;
+
+    VALIDATE_NON_NULL(field);
+    VALIDATE_NON_NULL(result);
+    VALIDATE_NON_NULL(size);
+
+    count = impl->mSize / sizeof(omnmDateTime);
+
+    // Ensure the buffer is big enough for this
+    allocateBufferMemory((void**)&impl->mVectorDateTime,
+        (size_t*)&impl->mVectorDateTimeLen,
+        sizeof(char*) * count);
+
+    rawDateTimes = (omnmDateTime*)impl->mData;
+    /* NB - i++ will add null character on each iteration */
+    for (i = 0; i < count; i++)
+    {
+        if (NULL == impl->mVectorDateTime[i])
+        {
+            mamaDateTime_create(&impl->mVectorDateTime[i]);
+
+        }
+        else
+        {
+            mamaDateTime_clear(impl->mVectorDateTime[i]);
+        }
+
+        OmnmPayloadImpl::convertOmnmDateTimeToMamaDateTime(&rawDateTimes[i], impl->mVectorDateTime[i]);
+    }
+
+    *result = impl->mVectorDateTime;
+    *size = count;
+
+    return MAMA_STATUS_OK;
 }
 
-/*
- * Postponing implementation until this type of vectors has a standard protocol
- * or is removed from the implementation
- */
 mama_status
 omnmmsgFieldPayload_getVectorPrice    (const msgFieldPayload   field,
-                                       const mamaPrice*        result,
+                                       const mamaPrice**       result,
                                        mama_size_t*            size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    omnmFieldImpl* impl = (omnmFieldImpl*)field;
+    omnmPrice* rawPrices;
+    size_t count = 0, i = 0, j = 0;
+
+    VALIDATE_NON_NULL(field);
+    VALIDATE_NON_NULL(result);
+    VALIDATE_NON_NULL(size);
+
+    count = impl->mSize / sizeof(omnmPrice);
+
+    // Ensure the buffer is big enough for this
+    allocateBufferMemory((void**)&impl->mVectorPrice,
+        (size_t*)&impl->mVectorPriceLen,
+        sizeof(char*) * count);
+
+    rawPrices = (omnmPrice*)impl->mData;
+    /* NB - i++ will add null character on each iteration */
+    for (i = 0; i < count; i++)
+    {
+        if (NULL == impl->mVectorPrice[i])
+        {
+            mamaPrice_create(&impl->mVectorPrice[i]);
+
+        }
+        else
+        {
+            mamaPrice_clear(impl->mVectorPrice[i]);
+        }
+
+        OmnmPayloadImpl::convertOmnmPriceToMamaPrice(&rawPrices[i], impl->mVectorPrice[i]);
+    }
+
+    *result = impl->mVectorPrice;
+    *size = count;
+
+    return MAMA_STATUS_OK;
 }
 
 

@@ -138,17 +138,20 @@ omnmmsgPayloadIter_next (msgPayloadIter          iter,
     case MAMA_FIELD_TYPE_I64:
     case MAMA_FIELD_TYPE_U64:
     case MAMA_FIELD_TYPE_F64:
-    case MAMA_FIELD_TYPE_TIME:
         impl->mField.mData = (void*) impl->mBufferPosition;
         impl->mField.mSize = sizeof(mama_u64_t);
         break;
     case MAMA_FIELD_TYPE_PRICE:
         impl->mField.mData = (void*) impl->mBufferPosition;
-        impl->mField.mSize = sizeof(mama_price_t);
+        impl->mField.mSize = sizeof(omnmPrice);
         break;
     case MAMA_FIELD_TYPE_STRING:
         impl->mField.mData = (void*) impl->mBufferPosition;
         impl->mField.mSize = strlen((const char*)impl->mBufferPosition) + 1;
+        break;
+    case MAMA_FIELD_TYPE_TIME:
+        impl->mField.mData = (void*)impl->mBufferPosition;
+        impl->mField.mSize = sizeof(omnmDateTime);
         break;
     case MAMA_FIELD_TYPE_MSG:
     case MAMA_FIELD_TYPE_OPAQUE:

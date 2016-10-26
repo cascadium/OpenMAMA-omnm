@@ -70,7 +70,27 @@ typedef struct omnmFieldImpl
     mama_size_t         mVectorStringLen;
     msgPayload*         mVectorPayload;
     mama_size_t         mVectorPayloadLen;
+    mamaDateTime*       mVectorDateTime;
+    mama_size_t         mVectorDateTimeLen;
+    mamaPrice*          mVectorPrice;
+    mama_size_t         mVectorPriceLen;
 } omnmFieldImpl;
+
+typedef struct omnmDateTime
+{
+    mama_u8_t  mHints;             /* Contains more information on how to parse */
+    mama_i64_t mSeconds;           /* -ve means time before epoch */
+    mama_u32_t mNanoseconds;
+    mama_u8_t  mPrecision;
+    char       mTimezoneName[14];  /* https://en.wikipedia.org/wiki/Tz_database */
+} omnmDateTime;
+
+typedef struct omnmPrice
+{
+    mama_u8_t  mHints;             /* Contains more information on how to parse*/
+    mama_f64_t mValue;
+    char       mCurrency[3];       /* ISO 4217 3-character currency code */
+} omnmPrice;
 
 class OmnmPayloadImpl {
 public:
@@ -193,6 +213,18 @@ public:
 
     static bool
     areFieldTypesCastable (mamaFieldType from, mamaFieldType to);
+
+    static void
+    convertOmnmDateTimeToMamaDateTime (omnmDateTime* from, mamaDateTime to);
+
+    static void
+    convertMamaDateTimeToOmnmDateTime (mamaDateTime from, omnmDateTime* to);
+
+    static void
+    convertOmnmPriceToMamaPrice (omnmPrice* from, mamaPrice to);
+
+    static void
+    convertMamaPriceToOmnmPrice (mamaPrice from, omnmPrice* to);
 
     // Clear the payload
     mama_status clear ();

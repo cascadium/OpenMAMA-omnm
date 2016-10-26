@@ -287,6 +287,56 @@ OmnmPayloadImpl::areFieldTypesCastable (mamaFieldType from, mamaFieldType to)
     }
 }
 
+void
+OmnmPayloadImpl::convertOmnmDateTimeToMamaDateTime (omnmDateTime* from, mamaDateTime to)
+{
+    mamaDateTime_setWithHints(to,
+                              from->mSeconds,
+                              from->mNanoseconds / 1000,
+                              (mamaDateTimePrecision)from->mPrecision,
+                              (mamaDateTimeHints)from->mHints);
+}
+
+void
+OmnmPayloadImpl::convertMamaDateTimeToOmnmDateTime (mamaDateTime from, omnmDateTime* to)
+{
+    mamaDateTimeHints hints;
+    mamaDateTimePrecision precision;
+    mama_u32_t seconds = 0, microseconds = 0;
+
+    memset(to, 0, sizeof(omnmDateTime));
+
+    mamaDateTime_getWithHints (from, &seconds, &microseconds, &precision, &hints);
+
+    to->mPrecision = (mama_u8_t)precision;
+    to->mNanoseconds = ((mama_u32_t)microseconds) * (mama_u32_t)1000;
+    to->mSeconds = (mama_u32_t)seconds;
+    to->mHints = (mama_u8_t)hints;
+}
+
+void
+OmnmPayloadImpl::convertOmnmPriceToMamaPrice (omnmPrice* from, mamaPrice to)
+{
+    mamaPrice_setWithHints (to, (double)from->mValue, (mamaPriceHints)from->mHints);
+}
+
+void
+OmnmPayloadImpl::convertMamaPriceToOmnmPrice (mamaPrice from, omnmPrice* to)
+{
+    double value;
+    mamaPricePrecision precision;
+    mamaPriceHints hints;
+
+    mamaPrice_getPrecision(from, &precision);
+    mamaPrice_getHints(from, &hints);
+    mamaPrice_getValue(from, &value);
+
+    memset(to, 0, sizeof(omnmPrice));
+
+    to->mValue = (mama_f64_t)value;
+    to->mHints = (mama_u8_t)hints;
+}
+
 mama_status
 OmnmPayloadImpl::clear()
 {
@@ -1245,8 +1295,7 @@ omnmmsgPayload_addDateTime (msgPayload          msg,
                             mama_fid_t          fid,
                             const mamaDateTime  value)
 {
-    VALIDATE_NON_NULL(msg);
-    return ((OmnmPayloadImpl*) msg)->addField (MAMA_FIELD_TYPE_TIME, name, fid, (uint8_t*)value, sizeof(mamaDateTime));
+    return omnmmsgPayload_updateDateTime(msg, name, fid, value);
 }
 
 mama_status
@@ -1255,8 +1304,7 @@ omnmmsgPayload_addPrice (msgPayload      msg,
                          mama_fid_t      fid,
                          const mamaPrice value)
 {
-    VALIDATE_NON_NULL(msg);
-    return ((OmnmPayloadImpl*) msg)->addField (MAMA_FIELD_TYPE_PRICE, name, fid, (uint8_t*)value, sizeof(mama_price_t));
+    return omnmmsgPayload_updatePrice(msg, name, fid, value);
 }
 
 mama_status
@@ -1454,10 +1502,6 @@ omnmmsgPayload_addVectorMsg (msgPayload          msg,
     return omnmmsgPayload_updateVectorMsg (msg,  name, fid, value, size);
 }
 
-/*
- * Postponing implementation until this type of vectors has a standard protocol
- * or is removed from the implementation
- */
 mama_status
 omnmmsgPayload_addVectorDateTime (msgPayload          msg,
                                   const char*         name,
@@ -1465,13 +1509,9 @@ omnmmsgPayload_addVectorDateTime (msgPayload          msg,
                                   const mamaDateTime  value[],
                                   mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    return omnmmsgPayload_updateVectorTime(msg, name, fid, value, size);
 }
 
-/*
- * Postponing implementation until this type of vectors has a standard protocol
- * or is removed from the implementation
- */
 mama_status
 omnmmsgPayload_addVectorPrice (msgPayload      msg,
                                const char*     name,
@@ -1479,7 +1519,7 @@ omnmmsgPayload_addVectorPrice (msgPayload      msg,
                                const mamaPrice value[],
                                mama_size_t     size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    return omnmmsgPayload_updateVectorPrice(msg, name, fid, value, size);
 }
 
 mama_status
@@ -1622,7 +1662,17 @@ omnmmsgPayload_updateDateTime (msgPayload          msg,
                                const mamaDateTime  value)
 {
     if (NULL == msg || NULL == value) return MAMA_STATUS_NULL_ARG;
-    return ((OmnmPayloadImpl*) msg)->updateField (MAMA_FIELD_TYPE_TIME, name, fid, (uint8_t*)value, sizeof(*value));
+
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*)msg;
+    omnmDateTime dateTime;
+
+    OmnmPayloadImpl::convertMamaDateTimeToOmnmDateTime (value, &dateTime);
+
+    return impl->updateField (MAMA_FIELD_TYPE_TIME,
+                              name,
+                              fid,
+                              (uint8_t*)&dateTime,
+                              sizeof(dateTime));
 }
 
 mama_status
@@ -1631,8 +1681,18 @@ omnmmsgPayload_updatePrice (msgPayload          msg,
                             mama_fid_t          fid,
                             const mamaPrice     value)
 {
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*)msg;
+    omnmPrice price;
+
     if (NULL == msg || NULL == value) return MAMA_STATUS_NULL_ARG;
-    return ((OmnmPayloadImpl*) msg)->updateField (MAMA_FIELD_TYPE_PRICE, name, fid, (uint8_t*)value, sizeof(mama_price_t));
+
+    OmnmPayloadImpl::convertMamaPriceToOmnmPrice(value, &price);
+
+    return impl->updateField(MAMA_FIELD_TYPE_PRICE,
+        name,
+        fid,
+        (uint8_t*)&price,
+        sizeof(omnmPrice));
 }
 
 mama_status
@@ -1863,10 +1923,31 @@ mama_status
 omnmmsgPayload_updateVectorPrice (msgPayload          msg,
                                   const char*         name,
                                   mama_fid_t          fid,
-                                  const mamaPrice*    value[],
+                                  const mamaPrice     value[],
                                   mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*)msg;
+    size_t i = 0;
+    VALIDATE_NAME_FID(name, fid);
+    VALIDATE_NON_NULL(msg);
+    VALIDATE_NON_NULL(value);
+
+    // Ensure the buffer is big enough for this
+    allocateBufferMemory((void**)&impl->mField.mBuffer,
+        &impl->mField.mBufferLen,
+        size * sizeof(omnmPrice));
+
+    omnmPrice* prices = (omnmPrice*)impl->mField.mBuffer;
+    for (i = 0; i < size; i++)
+    {
+        OmnmPayloadImpl::convertMamaPriceToOmnmPrice(value[i], &prices[i]);
+    }
+
+    return ((OmnmPayloadImpl*)msg)->updateField(MAMA_FIELD_TYPE_VECTOR_PRICE,
+        name,
+        fid,
+        (uint8_t*)impl->mField.mBuffer,
+        size * sizeof(omnmPrice));
 }
 
 mama_status
@@ -1876,7 +1957,28 @@ omnmmsgPayload_updateVectorTime (msgPayload          msg,
                                  const mamaDateTime  value[],
                                  mama_size_t         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*)msg;
+    size_t i = 0;
+    VALIDATE_NAME_FID(name, fid);
+    VALIDATE_NON_NULL(msg);
+    VALIDATE_NON_NULL(value);
+
+    // Ensure the buffer is big enough for this
+    allocateBufferMemory((void**)&impl->mField.mBuffer,
+        &impl->mField.mBufferLen,
+        size * sizeof(omnmDateTime));
+
+    omnmDateTime* dateTimes = (omnmDateTime*)impl->mField.mBuffer;
+    for (i = 0; i < size; i++)
+    {
+        OmnmPayloadImpl::convertMamaDateTimeToOmnmDateTime(value[i], &dateTimes[i]);
+    }
+
+    return ((OmnmPayloadImpl*)msg)->updateField(MAMA_FIELD_TYPE_VECTOR_TIME,
+        name,
+        fid,
+        (uint8_t*)impl->mField.mBuffer,
+        size * sizeof(omnmDateTime));
 }
 
 
@@ -2043,6 +2145,7 @@ omnmmsgPayload_getDateTime (const msgPayload    msg,
     {
         return status;
     }
+
     return omnmmsgFieldPayload_getDateTime ((const msgFieldPayload)&impl->mField, result);
 }
 
@@ -2054,8 +2157,13 @@ omnmmsgPayload_getPrice (const msgPayload    msg,
 {
     OmnmPayloadImpl* impl = (OmnmPayloadImpl *) msg;
     if (NULL == msg || NULL == result) return MAMA_STATUS_NULL_ARG;
-    impl->getField (name, fid, impl->mField);
-    return omnmmsgFieldPayload_getPrice (&impl->mField, result);
+    mama_status status = impl->getField (name, fid, impl->mField);
+    if (MAMA_STATUS_OK != status)
+    {
+        return status;
+    }
+
+    return omnmmsgFieldPayload_getPrice((const msgFieldPayload)&impl->mField, result);
 }
 
 mama_status
@@ -2214,23 +2322,41 @@ omnmmsgPayload_getVectorString (const msgPayload    msg,
 }
 
 mama_status
-omnmmsgPayload_getVectorDateTime (const msgPayload    msg,
-                                  const char*         name,
-                                  mama_fid_t          fid,
-                                  const mamaDateTime* result,
-                                  mama_size_t*        size)
+omnmmsgPayload_getVectorDateTime (const msgPayload     msg,
+                                  const char*          name,
+                                  mama_fid_t           fid,
+                                  const mamaDateTime** result,
+                                  mama_size_t*         size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl *)msg;
+    VALIDATE_NAME_FID(name, fid);
+    VALIDATE_NON_NULL(msg);
+
+    /* populate field with result */
+    mama_status status = impl->getField(name, fid, impl->mField);
+
+    if (MAMA_STATUS_OK != status) return status;
+
+    return omnmmsgFieldPayload_getVectorDateTime(&impl->mField, result, size);
 }
 
 mama_status
 omnmmsgPayload_getVectorPrice (const msgPayload    msg,
                                const char*         name,
                                mama_fid_t          fid,
-                               const mamaPrice*    result,
+                               const mamaPrice**   result,
                                mama_size_t*        size)
 {
-    return MAMA_STATUS_NOT_IMPLEMENTED;
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl *)msg;
+    VALIDATE_NAME_FID(name, fid);
+    VALIDATE_NON_NULL(msg);
+
+    /* populate field with result */
+    mama_status status = impl->getField(name, fid, impl->mField);
+
+    if (MAMA_STATUS_OK != status) return status;
+
+    return omnmmsgFieldPayload_getVectorPrice(&impl->mField, result, size);
 }
 
 mama_status
