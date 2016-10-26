@@ -159,7 +159,7 @@ do                                                                             \
 OmnmPayloadImpl::OmnmPayloadImpl() : mPayloadBuffer(NULL),
                                      mPayloadBufferSize(0),
                                      mPayloadBufferTail(0),
-                                     mField({}), /* Inline struct member */
+                                     mField(), /* Inline struct member */
                                      mParent(NULL)
 {
     mPayloadBufferSize = DEFAULT_PAYLOAD_SIZE;
