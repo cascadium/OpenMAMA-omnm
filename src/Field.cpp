@@ -141,6 +141,7 @@ omnmmsgFieldPayload_create (msgFieldPayload* field)
 mama_status
 omnmmsgFieldPayload_destroy (msgFieldPayload field)
 {
+    omnmmsgFieldPayloadImpl_cleanup ((omnmFieldImpl*)field);
     free (field);
     return MAMA_STATUS_OK;
 }
@@ -1150,4 +1151,58 @@ omnmmsgFieldPayload_setParent         (const msgFieldPayload   field,
     ((omnmFieldImpl*)field)->mParent = (OmnmPayloadImpl*) parent;
     return MAMA_STATUS_NOT_IMPLEMENTED;
 }
+
+void
+omnmmsgFieldPayloadImpl_cleanup (omnmFieldImpl* impl)
+{
+    mama_size_t i = 0, count = 0;
+
+    /* Complex data type elements below */
+    if (NULL != impl->mBuffer)
+    {
+        free (impl->mBuffer);
+        impl->mBuffer = NULL;
+    }
+    if (NULL != impl->mSubPayload)
+    {
+        omnmmsgPayload_destroy (impl->mSubPayload);
+        impl->mSubPayload = NULL;
+    }
+    if (NULL != impl->mVectorString)
+    {
+        free (impl->mVectorString);
+        impl->mVectorString = NULL;
+    }
+    if (NULL != impl->mVectorPayload)
+    {
+        count = impl->mVectorPayloadLen / sizeof(msgPayload);
+        for (i = 0; i < count; i++)
+        {
+            omnmmsgPayload_destroy (impl->mVectorPayload[i]);
+        }
+        free (impl->mVectorPayload);
+        impl->mVectorPayload = NULL;
+    }
+    if (NULL != impl->mVectorDateTime)
+    {
+        count = impl->mVectorDateTimeLen / sizeof(mamaDateTime);
+        for (i = 0; i < count; i++)
+        {
+            mamaDateTime_destroy (impl->mVectorDateTime[i]);
+        }
+        free (impl->mVectorDateTime);
+        impl->mVectorDateTime = NULL;
+    }
+    if (NULL != impl->mVectorPrice)
+    {
+        count = impl->mVectorPriceLen / sizeof(mamaPrice);
+        for (i = 0; i < count; i++)
+        {
+            mamaPrice_destroy (impl->mVectorPrice[i]);
+        }
+        free (impl->mVectorPrice);
+        impl->mVectorPrice = NULL;
+    }
+}
+
 

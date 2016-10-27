@@ -176,6 +176,7 @@ OmnmPayloadImpl::~OmnmPayloadImpl()
     {
         free (mPayloadBuffer);
     }
+    omnmmsgFieldPayloadImpl_cleanup(&mField);
 }
 
 bool
@@ -359,7 +360,7 @@ OmnmPayloadImpl::findFieldInBuffer (const char* name, mama_fid_t fid, omnmFieldI
     omnmFieldImpl* fieldCandidate;
 
     // NULL initialize any provided field
-    memset (&field, 0, sizeof(field));
+    //memset (&field, 0, sizeof(field));
 
     // This is really just for type casting so we can easily use bridge
     // iterator methods directly
@@ -377,7 +378,15 @@ OmnmPayloadImpl::findFieldInBuffer (const char* name, mama_fid_t fid, omnmFieldI
                         0 == strcmp (name, fieldCandidate->mName)))
         {
             // Copy the field's data to the provided onmnFieldImpl
-            memcpy (&field, fieldCandidate, sizeof(omnmFieldImpl));
+            //memcpy (&field, fieldCandidate, sizeof(omnmFieldImpl));
+            /* Itemize as field also holds accumulative data structures */
+            field.mFieldType = fieldCandidate->mFieldType;
+            field.mFid       = fieldCandidate->mFid;
+            field.mName      = fieldCandidate->mName;
+            field.mSize      = fieldCandidate->mSize;
+            field.mData      = fieldCandidate->mData;
+            field.mParent    = fieldCandidate->mParent;
+
             return MAMA_STATUS_OK;
         }
     }
@@ -597,7 +606,11 @@ mama_status
 omnmmsgPayload_destroy (msgPayload msg)
 {
     if (NULL == msg) return MAMA_STATUS_NULL_ARG;
-    delete (OmnmPayloadImpl*) msg;
+
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
+
+    delete impl;
+
     return MAMA_STATUS_OK;
 }
 

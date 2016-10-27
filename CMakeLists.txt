@@ -1,12 +1,14 @@
 cmake_minimum_required (VERSION 2.8.11)
 project (OpenMAMA-omnm)
 
-#if(UNIX)
-#else()
-    # Note path is relative to where it would be executed
-    set(DEFAULT_MAMA_SRC ../../OpenMAMA)
+# Note path is relative to where it would be executed
+set(DEFAULT_MAMA_SRC ../../OpenMAMA)
+
+if(UNIX)
+    set(DEFAULT_MAMA_ROOT ../OpenMAMA/openmama_install_*)
+else()
     set(DEFAULT_MAMA_ROOT "C:\\Program Files\\OpenMAMA")
-#endif()
+endif()
 
 if(NOT MAMA_SRC)
     set(MAMA_SRC ${DEFAULT_MAMA_SRC})

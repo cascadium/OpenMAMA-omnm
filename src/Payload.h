@@ -247,4 +247,8 @@ private:
     mama_status findFieldInBuffer (const char* name, mama_fid_t fid, struct omnmFieldImpl& field);
 };
 
+void
+omnmmsgFieldPayloadImpl_cleanup (omnmFieldImpl* impl);
+
+
 #endif /* MAMA_BRIDGE_OMNM_MSG_PAYLOAD_H__ */

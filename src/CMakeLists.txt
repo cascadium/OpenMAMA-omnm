@@ -14,13 +14,22 @@ link_directories(${MAMA_ROOT}/lib/dynamic-debug)
 
 add_definitions(-DBRIDGE -DMAMA_DLL)
 
-if (CMAKE_BUILD_TYPE MATCHES "Debug")
-    set(MAMA_LIB_SUFFIX "mdd")
+if(UNIX)
+    set(LIB_WOMBAT_COMMON wombatcommon)
+    set(LIB_MAMA_C mama)
+    set(LIB_OMNM mamaomnmmsgimpl)
 else()
-    set(MAMA_LIB_SUFFIX "md")    
+    if (CMAKE_BUILD_TYPE MATCHES "Debug")
+        set(MAMA_LIB_SUFFIX "mdd")
+    else()
+        set(MAMA_LIB_SUFFIX "md")    
+    endif()
+    set(LIB_WOMBAT_COMMON libwombatcommon${MAMA_LIB_SUFFIX})
+    set(LIB_MAMA_C libmamac${MAMA_LIB_SUFFIX})
+    set(LIB_OMNM libmamaomnmmsgimpl${MAMA_LIB_SUFFIX})
 endif()
 
-add_library(libmamaomnmmsgimpl${MAMA_LIB_SUFFIX}
+add_library(${LIB_OMNM}
             MODULE Field.cpp
                    Iterator.cpp
                    Iterator.h
@@ -28,15 +37,19 @@ add_library(libmamaomnmmsgimpl${MAMA_LIB_SUFFIX}
                    Payload.cpp
                    Payload.h)
 
-target_link_libraries(libmamaomnmmsgimpl${MAMA_LIB_SUFFIX}
-                      libwombatcommon${MAMA_LIB_SUFFIX}
-                      libmamac${MAMA_LIB_SUFFIX})
+target_link_libraries(${LIB_OMNM}
+                      ${LIB_WOMBAT_COMMON}
+                      ${LIB_MAMA_C})
 
-install(TARGETS libmamaomnmmsgimpl${MAMA_LIB_SUFFIX}
+if(UNIX)
+    set_target_properties(${LIB_OMNM} PROPERTIES PREFIX "")
+endif()
+
+install(TARGETS ${LIB_OMNM}
         CONFIGURATIONS Release
         DESTINATION bin/dynamic)
 
 # CMAKE_CL_64 = true / false
-install(TARGETS libmamaomnmmsgimpl${MAMA_LIB_SUFFIX}
+install(TARGETS ${LIB_OMNM}
         CONFIGURATIONS Debug
         DESTINATION bin/dynamic-debug)
