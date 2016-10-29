@@ -25,11 +25,11 @@ before_install:
   - cd OpenMAMA
   - git checkout next
   - export MAMA_SOURCE=$(pwd)
-  - export MAMA_INSTALL=$MAMA_SOURCE/$(ls -1 | grep "openmama_install_*")
+  - export MAMA_INSTALL=$MAMA_SOURCE/install
   - export LD_LIBRARY_PATH=$MAMA_INSTALL/lib:/usr/local/lib:/usr/local/lib64:$SOURCE_DIR
-  - export PATH=$(echo ~/OpenMAMA/openmama_install_*/bin):$PATH
+  - export PATH=$(echo ~/OpenMAMA/install/bin):$PATH
   - "cd /usr/src/gtest && sudo cmake . && sudo cmake --build . && sudo mv libg* /usr/local/lib/ ; cd -"
-  - scons product=mama middleware=qpid with_unittest=y gtest_home=/usr/local
+  - scons product=mama middleware=qpid with_unittest=y gtest_home=/usr/local prefix=#install
 
 script:
  - cd $SOURCE_DIR
