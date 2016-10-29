@@ -132,7 +132,90 @@ public:
         {
             return MAMA_STATUS_WRONG_FIELD_TYPE;
         }
-        memcpy (s, field.mData, field.mSize);
+        switch (field.mFieldType)
+        {
+            case MAMA_FIELD_TYPE_BOOL:
+            {
+                mama_bool_t* currentValue = (mama_bool_t*) field.mData;
+                *s = (T)*currentValue;
+                break;
+            }
+            case MAMA_FIELD_TYPE_CHAR:
+            {
+                char* currentValue = (char*) field.mData;
+                *s = (T)*currentValue;
+                break;
+            }
+            case MAMA_FIELD_TYPE_I8:
+            {
+                mama_i8_t* currentValue = (mama_i8_t*) field.mData;
+                *s = (T)*currentValue;
+                break;
+            }
+            case MAMA_FIELD_TYPE_U8:
+            {
+                mama_u8_t* currentValue = (mama_u8_t*) field.mData;
+                *s = (T)*currentValue;
+                break;
+            }
+            case MAMA_FIELD_TYPE_I16:
+            {
+                mama_i16_t* currentValue = (mama_i16_t*) field.mData;
+                *s = (T)*currentValue;
+                break;
+            }
+            case MAMA_FIELD_TYPE_U16:
+            {
+                mama_u16_t* currentValue = (mama_u16_t*) field.mData;
+                *s = (T)*currentValue;
+                break;
+            }
+            case MAMA_FIELD_TYPE_I32:
+            {
+                mama_i32_t* currentValue = (mama_i32_t*) field.mData;
+                *s = (T)*currentValue;
+                break;
+            }
+            case MAMA_FIELD_TYPE_U32:
+            {
+                mama_u32_t* currentValue = (mama_u32_t*) field.mData;
+                *s = (T)*currentValue;
+                break;
+            }
+            case MAMA_FIELD_TYPE_F32:
+            {
+                mama_f32_t* currentValue = (mama_f32_t*) field.mData;
+                *s = (T)*currentValue;
+                break;
+            }
+            case MAMA_FIELD_TYPE_QUANTITY:
+            {
+                mama_quantity_t* currentValue = (mama_quantity_t*) field.mData;
+                *s = (T)*currentValue;
+                break;
+            }
+            case MAMA_FIELD_TYPE_I64:
+            {
+                mama_i64_t* currentValue = (mama_i64_t*) field.mData;
+                *s = (T)*currentValue;
+                break;
+            }
+            case MAMA_FIELD_TYPE_U64:
+            {
+                mama_u64_t* currentValue = (mama_u64_t*) field.mData;
+                *s = (T)*currentValue;
+                break;
+            }
+            case MAMA_FIELD_TYPE_F64:
+            {
+                mama_f64_t* currentValue = (mama_f64_t*) field.mData;
+                *s = (T)*currentValue;
+                break;
+            }
+            default:
+                memcpy (s, field.mData, field.mSize);
+                break;
+        }
 
         return MAMA_STATUS_OK;
     }

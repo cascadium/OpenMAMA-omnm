@@ -855,7 +855,10 @@ omnmmsgPayload_unSerialize (const msgPayload    msg,
     {
         return MAMA_STATUS_NOMEM;
     }
-    memcpy (impl->mPayloadBuffer, (void*)buffer, bufferLength);
+    if (impl->mPayloadBuffer != (void*)buffer)
+    {
+        memcpy (impl->mPayloadBuffer, (void*)buffer, bufferLength);
+    }
 
     impl->mPayloadBufferTail = bufferLength;
 
