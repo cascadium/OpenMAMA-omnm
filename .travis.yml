@@ -33,7 +33,9 @@ before_install:
 
 script:
  - cd $SOURCE_DIR
+ - echo scons --with-mamasource=$MAMA_SOURCE --with-mamainstall=$MAMA_INSTALL --with-gtest=/usr/local
  - scons --with-mamasource=$MAMA_SOURCE --with-mamainstall=$MAMA_INSTALL --with-gtest=/usr/local
+ - cat config.log
  - ./unittests
  - UnitTestMamaMsgC -m qpid -p omnmmsg -i O
  - UnitTestMamaPayloadC -m qpid -p omnmmsg -i O
