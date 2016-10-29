@@ -13,24 +13,27 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y scons git flex uuid-dev libevent-dev cmake git libzmq3-dev libgtest-dev
   - cd
-  - wget https://github.com/apache/qpid-proton/archive/0.10.tar.gz -O proton.tgz
+  - wget https://github.com/apache/qpid-proton/archive/0.15.0.tar.gz -O proton.tgz
   - tar xvf proton.tgz
   - cd qpid-proton*
   - mkdir build
   - cd build
-  - cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DSYSINSTALL_BINDINGS=ON -DBUILD_JAVA=OFF -DBUILD_PERL=OFF -DBUILD_PHP=OFF -DBUILD_PYTHON=OFF -DBUILD_RUBY=OFF
+  - cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTING:BOOL=OFF -DBUILD_JAVA:BOOL=OFF
   - sudo make install
   - cd
   - git clone https://github.com/OpenMAMA/OpenMAMA.git
   - cd OpenMAMA
-  - git checkout OpenMAMA-2.4.0
-  - scons product=mama middleware=qpid
+  - git checkout next
   - export MAMA_SOURCE=$(pwd)
   - export MAMA_INSTALL=$MAMA_SOURCE/$(ls -1 | grep "openmama_install_*")
   - export LD_LIBRARY_PATH=$MAMA_INSTALL/lib:/usr/local/lib:/usr/local/lib64:$SOURCE_DIR
+  - export PATH=$(echo ~/OpenMAMA/openmama_install_*/bin):$PATH
   - "cd /usr/src/gtest && sudo cmake . && sudo cmake --build . && sudo mv libg* /usr/local/lib/ ; cd -"
+  - scons product=mama middleware=qpid with_unittest=y
 
 script:
  - cd $SOURCE_DIR
  - scons --with-mamasource=$MAMA_SOURCE --with-mamainstall=$MAMA_INSTALL --with-gtest=/usr/local
  - ./unittests
+ - UnitTestMamaMsgC -m qpid -p omnmmsg -i O
+ - UnitTestMamaPayloadC -m qpid -p omnmmsg -i O
