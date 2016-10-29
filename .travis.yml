@@ -29,7 +29,7 @@ before_install:
   - export LD_LIBRARY_PATH=$MAMA_INSTALL/lib:/usr/local/lib:/usr/local/lib64:$SOURCE_DIR
   - export PATH=$(echo ~/OpenMAMA/openmama_install_*/bin):$PATH
   - "cd /usr/src/gtest && sudo cmake . && sudo cmake --build . && sudo mv libg* /usr/local/lib/ ; cd -"
-  - scons product=mama middleware=qpid with_unittest=y
+  - scons product=mama middleware=qpid with_unittest=y gtest_home=/usr/local
 
 script:
  - cd $SOURCE_DIR
