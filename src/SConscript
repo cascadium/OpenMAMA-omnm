@@ -1,3 +1,5 @@
+import platform
+
 build_unit_tests=True
 
 lib_env = Environment (
@@ -35,6 +37,9 @@ ut_env.Append (
     LIBS        = [ 'gtest', 'mamaomnmmsgimpl' ],
 )
 
+if platform.system() != "Windows":
+    ut_env.Append (LIBS = [ 'pthread' ])
+
 if not lib_env.GetOption('clean') and not lib_env.GetOption('help'):
     conf = Configure (lib_env)
 
@@ -45,7 +50,6 @@ if not lib_env.GetOption('clean') and not lib_env.GetOption('help'):
     if not conf.CheckCXXHeader ('gtest/gtest.h'):
         print 'Cannot find gtest/gtest.h - not building with unit tests'
         build_unit_tests=False
-        Exit(1)
 
     if not conf.CheckLib ('mama'):
         print 'Cannot find MAMA install directory - check --with-mamainstall'
@@ -68,6 +72,7 @@ lib_env.Command ("../libmamaomnmmsgimpl.so",
                  ]
 )
 
+print lib_env['PLATFORM']
 if build_unit_tests:
     ut_env.Program ('unittests', ['UnitTests.cpp'])
     ut_env.Command ("../unittests",
