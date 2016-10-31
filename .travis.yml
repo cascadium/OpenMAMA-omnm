@@ -26,16 +26,15 @@ before_install:
   - git checkout next
   - export MAMA_SOURCE=$(pwd)
   - export MAMA_INSTALL=$MAMA_SOURCE/install
-  - export LD_LIBRARY_PATH=$MAMA_INSTALL/lib:/usr/local/lib:/usr/local/lib64:$SOURCE_DIR
+  - export LD_LIBRARY_PATH=$MAMA_INSTALL/lib:/usr/local/lib:/usr/local/lib64:$SOURCE_DIR/bin
   - export PATH=$(echo ~/OpenMAMA/install/bin):$PATH
   - "cd /usr/src/gtest && sudo cmake . && sudo cmake --build . && sudo mv libg* /usr/local/lib/ ; cd -"
   - scons product=mama middleware=qpid with_unittest=y gtest_home=/usr/local prefix=#install
 
 script:
  - cd $SOURCE_DIR
- - echo scons --with-mamasource=$MAMA_SOURCE --with-mamainstall=$MAMA_INSTALL --with-gtest=/usr/local
- - scons --with-mamasource=$MAMA_SOURCE --with-mamainstall=$MAMA_INSTALL --with-gtest=/usr/local
- - cat config.log
- - ./unittests
+ - cmake -DMAMA_SRC=$MAMA_SOURCE -DMAMA_ROOT=$MAMA_INSTALL -DGTEST_ROOT=/usr/local -DCMAKE_INSTALL_PREFIX=$(pwd) .
+ - make install
+ - ./bin/unittests
  - UnitTestMamaMsgC -m qpid -p omnmmsg -i O
  - UnitTestMamaPayloadC -m qpid -p omnmmsg -i O

@@ -2,6 +2,7 @@ include_directories(.)
 include_directories(${MAMA_SRC}/mama/c_cpp/src/c)
 include_directories(${MAMA_SRC}/common/c_cpp/src/c)
 include_directories(${MAMA_ROOT}/include)
+include_directories(${GTEST_ROOT}/include)
 
 # Default to installing directly to MAMA directory
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -11,25 +12,11 @@ endif()
 link_directories(${MAMA_ROOT}/lib)
 link_directories(${MAMA_ROOT}/lib/dynamic)
 link_directories(${MAMA_ROOT}/lib/dynamic-debug)
+link_directories(${GTEST_ROOT}/lib)
 
 add_definitions(-DBRIDGE -DMAMA_DLL)
 
-if(UNIX)
-    set(LIB_WOMBAT_COMMON wombatcommon)
-    set(LIB_MAMA_C mama)
-    set(LIB_OMNM mamaomnmmsgimpl)
-else()
-    if (CMAKE_BUILD_TYPE MATCHES "Debug")
-        set(MAMA_LIB_SUFFIX "mdd")
-    else()
-        set(MAMA_LIB_SUFFIX "md")    
-    endif()
-    set(LIB_WOMBAT_COMMON libwombatcommon${MAMA_LIB_SUFFIX})
-    set(LIB_MAMA_C libmamac${MAMA_LIB_SUFFIX})
-    set(LIB_OMNM libmamaomnmmsgimpl${MAMA_LIB_SUFFIX})
-endif()
-
-add_library(${LIB_OMNM}
+add_library(mamaomnmmsgimpl
             MODULE Field.cpp
                    Iterator.cpp
                    Iterator.h
@@ -37,19 +24,38 @@ add_library(${LIB_OMNM}
                    Payload.cpp
                    Payload.h)
 
-target_link_libraries(${LIB_OMNM}
-                      ${LIB_WOMBAT_COMMON}
-                      ${LIB_MAMA_C})
+if(WIN32)
+    if (CMAKE_BUILD_TYPE MATCHES "Debug")
+        set(MAMA_LIB_SUFFIX "mdd")
+    else()
+        set(MAMA_LIB_SUFFIX "md")    
+    endif()
+    target_link_libraries(mamaomnmmsgimpl
+                          libwombatcommon${MAMA_LIB_SUFFIX}
+                          libmamac${MAMA_LIB_SUFFIX})
+    set_target_properties(mamaomnmmsgimpl PROPERTIES PREFIX "lib")
+    # Windows Targets
+    install(TARGETS mamaomnmmsgimpl
+            CONFIGURATIONS Release
+            DESTINATION bin/dynamic)
+    install(TARGETS mamaomnmmsgimpl
+            CONFIGURATIONS Debug
+            DESTINATION bin/dynamic-debug)
 
-if(UNIX)
-    set_target_properties(${LIB_OMNM} PROPERTIES PREFIX "")
+elseif(UNIX)
+    add_library(mamaomnmmsgimpl-static
+                STATIC Field.cpp
+                       Iterator.cpp
+                       Iterator.h
+                       omnmmsgpayloadfunctions.h
+                       Payload.cpp
+                       Payload.h)
+
+    # Only build the module's unit tests on linux
+    add_executable(unittests UnitTests.cpp)
+    target_link_libraries(unittests gtest mamaomnmmsgimpl-static pthread wombatcommon mama)
+    target_link_libraries(mamaomnmmsgimpl wombatcommon mama)
+    install(TARGETS mamaomnmmsgimpl DESTINATION lib)
+    install(TARGETS unittests DESTINATION bin)
 endif()
 
-install(TARGETS ${LIB_OMNM}
-        CONFIGURATIONS Release
-        DESTINATION bin/dynamic)
-
-# CMAKE_CL_64 = true / false
-install(TARGETS ${LIB_OMNM}
-        CONFIGURATIONS Debug
-        DESTINATION bin/dynamic-debug)

@@ -5,7 +5,8 @@ project (OpenMAMA-omnm)
 set(DEFAULT_MAMA_SRC ../../OpenMAMA)
 
 if(UNIX)
-    set(DEFAULT_MAMA_ROOT ../OpenMAMA/openmama_install_*)
+    file(GLOB DEFAULT_MAMA_ROOT ../OpenMAMA/openmama_install_*)
+    set(DEFAULT_GTEST_ROOT "/usr/local")
 else()
     set(DEFAULT_MAMA_ROOT "C:\\Program Files\\OpenMAMA")
 endif()
@@ -16,6 +17,10 @@ endif()
 
 if(NOT MAMA_ROOT)
     set(MAMA_ROOT ${DEFAULT_MAMA_ROOT})
+endif()
+
+if(NOT GTEST_ROOT)
+    set(GTEST_ROOT ${DEFAULT_GTEST_ROOT})
 endif()
 
 add_subdirectory(src)
