@@ -8,7 +8,15 @@ if(UNIX)
     file(GLOB DEFAULT_MAMA_ROOT ../OpenMAMA/openmama_install_*)
     set(DEFAULT_GTEST_ROOT "/usr/local")
 else()
-    set(DEFAULT_MAMA_ROOT "C:\\Program Files\\OpenMAMA")
+    if(CMAKE_CL_64)
+        set(DEFAULT_INSTALL_PREFIX $ENV{ProgramW6432})
+    else()
+        set(DEFAULT_INSTALL_PREFIX $ENV{PROGRAMFILES})
+    endif()
+
+    # Note path is relative to where it would be used
+    set(DEFAULT_MAMA_SRC ../../OpenMAMA)
+    set(DEFAULT_MAMA_ROOT "${DEFAULT_INSTALL_PREFIX}/OpenMAMA")
 endif()
 
 if(NOT MAMA_SRC)
