@@ -101,7 +101,7 @@ TEST_F(OmnmTests, UpdatePayloadDateTime)
     mamaDateTime_setToMidnightToday(expected, NULL);
     omnmmsgPayload_updateDateTime (mPayloadBase, NULL, 666, expected);
     omnmmsgPayload_getDateTime (mPayloadBase, NULL, 666, actual);
-    ASSERT_EQ (*expected, *actual);
+    mamaDateTime_equal(expected, actual);
     mamaDateTime_destroy(expected);
     mamaDateTime_destroy(actual);
 }
@@ -125,7 +125,7 @@ TEST_F(OmnmTests, CreatePayloadWithNativeDateTimes)
     mamaDateTime_create(&actual);
     omnmmsgPayload_addDateTime (mPayloadBase, NULL, 666, expected);
     omnmmsgPayload_getDateTime (mPayloadBase, NULL, 666, actual);
-    ASSERT_EQ (*expected, *actual);
+    mamaDateTime_equal(expected, actual);
     mamaDateTime_destroy(expected);
     mamaDateTime_destroy(actual);
 }
