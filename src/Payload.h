@@ -92,6 +92,22 @@ typedef struct omnmPrice
     char       mCurrency[3];       /* ISO 4217 3-character currency code */
 } omnmPrice;
 
+/*
+ * byte[0]  = Payload Type
+ * byte[1]  = Payload Version
+ * byte[2]  = Remaining Header Bytes
+ * byte[3+] = Header struct
+ */
+typedef struct omnmHeaderV1
+{
+    mama_u8_t  mType;
+    mama_u8_t  mWireFormatVersion;
+    mama_u8_t  mRemainingHeaderSize; /* Always 0 in this version */
+} omnmHeaderV1;
+
+// The header type is defined as a V1 header
+typedef omnmHeaderV1 omnmHeader;
+
 class OmnmPayloadImpl {
 public:
     OmnmPayloadImpl();
@@ -310,20 +326,31 @@ public:
     convertMamaPriceToOmnmPrice (mamaPrice from, omnmPrice* to);
 
     // Clear the payload
-    mama_status clear ();
+    mama_status
+    clear ();
+
+    // Get the number of bytes in the current header
+    uint16_t
+    getHeaderSize();
 
     // Underlying buffer to store the payload
     uint8_t*      mPayloadBuffer;
 
-    // This really reflects the capacity of mPayloadBuffer
+    // This really reflects the capacity of mPayloadBuffermPayloadBufferTail
     size_t        mPayloadBufferSize;
 
-    // Tail always points to the end of the 'useful' part of the buffer, where
+    // Tail always points to the end of the 'useful' paromnt of the buffer, where
     // the free space in the remaining buffer lives
     size_t        mPayloadBufferTail;
 
+    // Reusable field to use during payload interface crud operations
     omnmFieldImpl mField;
+
+    // If this is a member of a mamaMsg, this is a pointer to it
     mamaMsg       mParent;
+
+    // Meta data for the payload
+    omnmHeader    mHeader;
 private:
     // Find the field inside the buffer and populate provided field with its
     // location

@@ -52,6 +52,7 @@
 #define        LENGTH_WIDTH            4
 #define        DEFAULT_PAYLOAD_SIZE    200
 #define        MAMA_PAYLOAD_ID_OMNM    'O'
+#define        OMNM_PROTOCOL_VERSION   1
 
 
 #define ADD_SCALAR_FIELD(MSG,NAME,FID,VALUE,TYPE)                              \
@@ -160,14 +161,14 @@ OmnmPayloadImpl::OmnmPayloadImpl() : mPayloadBuffer(NULL),
                                      mPayloadBufferSize(0),
                                      mPayloadBufferTail(0),
                                      mField(), /* Inline struct member */
+                                     mHeader(),
                                      mParent(NULL)
 {
-    mPayloadBufferSize = DEFAULT_PAYLOAD_SIZE;
-    mPayloadBuffer     = (uint8_t*) calloc (mPayloadBufferSize, 1);
+    mPayloadBufferSize           = DEFAULT_PAYLOAD_SIZE;
+    mPayloadBuffer               = (uint8_t*) calloc (mPayloadBufferSize, 1);
 
-    // First byte always contains payload type - populate and move past
-    *((uint8_t*)mPayloadBuffer) = MAMA_PAYLOAD_ID_OMNM;
-    mPayloadBufferTail++;
+    // Initialize with defaults
+    clear();
 }
 
 OmnmPayloadImpl::~OmnmPayloadImpl()
@@ -343,13 +344,27 @@ OmnmPayloadImpl::convertMamaPriceToOmnmPrice (mamaPrice from, omnmPrice* to)
 mama_status
 OmnmPayloadImpl::clear()
 {
+    // Initialize header with defaults
+    mHeader.mType                = MAMA_PAYLOAD_ID_OMNM;
+    mHeader.mWireFormatVersion   = OMNM_PROTOCOL_VERSION;
+    mHeader.mRemainingHeaderSize = sizeof(omnmHeader) - sizeof(omnmHeaderV1);
+
+    // Populate header types and move past
+    memcpy(mPayloadBuffer, &mHeader, sizeof(omnmHeader));
+
     // Make sure tail is set to after the 'type' byte
-    mPayloadBufferTail = 1;
+    mPayloadBufferTail = (size_t) getHeaderSize();
 
     // NULL initialize the buffer after the first byte
-    memset ((void*)(mPayloadBuffer + 1), 0, mPayloadBufferSize - 1);
+    memset ((void*)(mPayloadBuffer + mPayloadBufferTail), 0, mPayloadBufferSize - mPayloadBufferTail);
 
     return MAMA_STATUS_OK;
+}
+
+uint16_t
+OmnmPayloadImpl::getHeaderSize()
+{
+    return (uint16_t)(sizeof(omnmHeaderV1) + mHeader.mRemainingHeaderSize);
 }
 
 mama_status
@@ -841,25 +856,40 @@ omnmmsgPayload_unSerialize (const msgPayload    msg,
                             mama_size_t         bufferLength)
 {
     OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
+    omnmHeader       header;
 
     if (NULL == msg || NULL == buffer || 0 == bufferLength)
         return MAMA_STATUS_NULL_ARG;
 
-    /* Wipe current buffer */
+    // New buffer incoming - check header for version compatibility
+    memcpy(&header, buffer, sizeof(header));
+    if (header.mWireFormatVersion > OMNM_PROTOCOL_VERSION)
+    {
+        return MAMA_STATUS_WRONG_FIELD_TYPE;
+    }
+
+    // Wipe current buffer
     memset (impl->mPayloadBuffer, 0, impl->mPayloadBufferSize);
 
-    /* Ensure buffer is big enough to hold */
+    // Ensure buffer is big enough to hold
     if (0 != allocateBufferMemory ((void**) &impl->mPayloadBuffer,
                                    &impl->mPayloadBufferSize,
                                    bufferLength))
     {
         return MAMA_STATUS_NOMEM;
     }
+
+    // Do not attempt self copy
     if (impl->mPayloadBuffer != (void*)buffer)
     {
         memcpy (impl->mPayloadBuffer, (void*)buffer, bufferLength);
     }
 
+    // Parse the rest of the header for initialization
+    impl->mHeader.mWireFormatVersion = header.mWireFormatVersion;
+    impl->mHeader.mRemainingHeaderSize = header.mRemainingHeaderSize;
+
+    // Move tail to end of buffer
     impl->mPayloadBufferTail = bufferLength;
 
     return MAMA_STATUS_OK;

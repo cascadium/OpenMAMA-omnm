@@ -186,7 +186,7 @@ omnmmsgPayloadIter_next (msgPayloadIter          iter,
     if (0 == impl->mIndex)
     {
         /* Start iterating just after the message type byte */
-        impl->mBufferPosition = impl->mMsg->mPayloadBuffer + 1;
+        impl->mBufferPosition = impl->mMsg->mPayloadBuffer + impl->mMsg->getHeaderSize();
     }
     else
     {
@@ -229,7 +229,7 @@ omnmmsgPayloadIter_begin (msgPayloadIter          iter,
     impl->mIndex       = 0;
 
     /* Start iterating just after the message type byte */
-    impl->mBufferPosition = impl->mMsg->mPayloadBuffer + 1;
+    impl->mBufferPosition = impl->mMsg->mPayloadBuffer + impl->mMsg->getHeaderSize();
 
     firstField = omnmmsgPayloadIter_next (iter, field, msg);
 
