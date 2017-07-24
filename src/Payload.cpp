@@ -582,6 +582,22 @@ OmnmPayloadImpl::updateField (mamaFieldType type, omnmFieldImpl& field,
 }
 
 
+mama_status
+OmnmPayloadImpl::updateSubMsg (msgPayload msg, const char* name, mama_fid_t fid, const msgPayload value)
+{
+    const void* buffer = NULL;
+    mama_size_t bufferLen = 0;
+    omnmmsgPayload_serialize (value, &buffer, &bufferLen);
+
+    return ((OmnmPayloadImpl*) msg)->updateField (MAMA_FIELD_TYPE_MSG,
+                                                  name,
+                                                  fid,
+                                                  (uint8_t*)buffer,
+                                                  bufferLen);
+}
+
+
+
 /*=========================================================================
   =                   Public interface functions                          =
   =========================================================================*/
@@ -1036,7 +1052,7 @@ omnmmsgPayload_apply (msgPayload          dest,
             msgPayload result = NULL;
 
             omnmmsgFieldPayload_getMsg  (field, &result);
-            omnmmsgPayload_updateSubMsg (dest, name, fid, result);
+            ((OmnmPayloadImpl*) msg)->updateSubMsg (dest, name, fid, result);
             break;
         }
         case MAMA_FIELD_TYPE_OPAQUE:
@@ -1746,20 +1762,15 @@ mama_status
 omnmmsgPayload_updateSubMsg (msgPayload          msg,
                              const char*         name,
                              mama_fid_t          fid,
-                             const msgPayload    value)
+                             const mamaMsg       value)
 {
     if (NULL == msg || NULL == value) return MAMA_STATUS_NULL_ARG;
 
-    const void* buffer = NULL;
-    mama_size_t bufferLen = 0;
+    msgPayload payload = NULL;
+    mama_status status = mamaMsgImpl_getPayload (value, &payload);
+    if (status != MAMA_STATUS_OK) return status;
 
-    omnmmsgPayload_serialize (value, &buffer, &bufferLen);
-
-    return ((OmnmPayloadImpl*) msg)->updateField (MAMA_FIELD_TYPE_MSG,
-                                                  name,
-                                                  fid,
-                                                  (uint8_t*)buffer,
-                                                  bufferLen);
+    return ((OmnmPayloadImpl*) msg)->updateSubMsg (msg, name, fid, payload);
 }
 
 mama_status

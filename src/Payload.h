@@ -333,6 +333,10 @@ public:
     uint16_t
     getHeaderSize();
 
+   mama_status
+   updateSubMsg (msgPayload msg, const char* name, mama_fid_t fid, const msgPayload value);
+
+
     // Underlying buffer to store the payload
     uint8_t*      mPayloadBuffer;
 
