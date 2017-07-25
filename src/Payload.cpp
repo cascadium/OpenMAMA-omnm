@@ -35,6 +35,7 @@
 
 #include "payloadbridge.h"
 #include "msgfieldimpl.h"
+#include "msgimpl.h"
 
 #include "omnmmsgpayloadfunctions.h"
 #include <wombat/strutils.h>
