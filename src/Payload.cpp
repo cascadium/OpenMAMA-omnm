@@ -388,9 +388,8 @@ OmnmPayloadImpl::findFieldInBuffer (const char* name, mama_fid_t fid, omnmFieldI
     while (NULL != (fieldCandidate = (omnmFieldImpl*)omnmmsgPayloadIter_next (iterOpaque, NULL, this)))
     {
         // Fid match - found the field
-        if (fid == fieldCandidate->mFid ||
-                (name != NULL && fieldCandidate->mName != NULL &&
-                        0 == strcmp (name, fieldCandidate->mName)))
+        if ( ((0 != fid) && (fid == fieldCandidate->mFid))
+          || ((name != NULL) && (fieldCandidate->mName != NULL) && (0 == strcmp (name, fieldCandidate->mName))) )
         {
             // Copy the field's data to the provided onmnFieldImpl
             //memcpy (&field, fieldCandidate, sizeof(omnmFieldImpl));
@@ -784,7 +783,7 @@ omnmmsgPayload_toString (const msgPayload msg)
 
         if (0 == fieldIdx)
         {
-            
+
             charIdx += sprintf ((char*)impl->mField.mBuffer + charIdx,
                                 "%s[%u]=%s",
                                 fname ? fname : "",
