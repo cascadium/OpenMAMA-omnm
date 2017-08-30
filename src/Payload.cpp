@@ -800,12 +800,21 @@ omnmmsgPayload_toString (const msgPayload msg)
 
         if (0 == fieldIdx)
         {
-
-            charIdx += sprintf ((char*)impl->mField.mBuffer + charIdx,
-                                "%s[%u]=%s",
-                                fname ? fname : "",
-                                fid,
-                                part);
+            if (fid == 0)
+            {
+               charIdx += sprintf ((char*)impl->mField.mBuffer + charIdx,
+                                   "%s=%s",
+                                   fname ? fname : "",
+                                   part);
+            }
+            else
+            {
+               charIdx += sprintf ((char*)impl->mField.mBuffer + charIdx,
+                                   "%s[%u]=%s",
+                                   fname ? fname : "",
+                                   fid,
+                                   part);
+            }
         }
 
         if (omnmmsgPayloadIter_hasNext (iterOpaque, msg))
