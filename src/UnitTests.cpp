@@ -179,6 +179,67 @@ TEST_F(OmnmTests, IteratorTest)
     mama_fid_t fid1 = 100;
     mama_i64_t actual1 = 0;
     mama_i64_t expected1 = 12398;
+    mama_fid_t fid2 = 101;
+    mama_i64_t actual2 = 0;
+    mama_i64_t expected2 = 12399;
+    mama_fid_t fid3 = 102;
+    const char* actual3 = "";
+    const char* expected3 = "teststr";
+    omnmmsgPayload_addI64 (mPayloadBase, NULL, fid1, expected1);
+    omnmmsgPayload_addI64 (mPayloadBase, NULL, fid2, expected2);
+    omnmmsgPayload_addString (mPayloadBase, NULL, fid3, expected3);
+
+    omnmmsgPayloadIterImpl_init (&iter, (OmnmPayloadImpl*)mPayloadBase);
+
+    field = omnmmsgPayloadIter_next(iterOpaque, NULL, mPayloadBase);
+    mama_fid_t fidactual = 0;
+    mamaFieldType typeactual;
+    omnmmsgFieldPayload_getFid (field, NULL, NULL, &fidactual);
+    omnmmsgFieldPayload_getType (field, &typeactual);
+    omnmmsgFieldPayload_getI64 (field, &actual1);
+    ASSERT_EQ (MAMA_FIELD_TYPE_I64, typeactual);
+    ASSERT_EQ (fid1, fidactual);
+    ASSERT_EQ (expected1, actual1);
+
+    field = omnmmsgPayloadIter_next(iterOpaque, NULL, mPayloadBase);
+    omnmmsgFieldPayload_getFid (field, NULL, NULL, &fidactual);
+    omnmmsgFieldPayload_getType (field, &typeactual);
+    omnmmsgFieldPayload_getI64 (field, &actual2);
+    ASSERT_EQ (MAMA_FIELD_TYPE_I64, typeactual);
+    ASSERT_EQ (fid2, fidactual);
+    ASSERT_EQ (expected2, actual2);
+
+    // Try an update too while we're here...
+    expected2 = 242355;
+    omnmmsgFieldPayload_updateI64 (field, mPayloadBase, expected2);
+    omnmmsgFieldPayload_getI64 (field, &actual2);
+    ASSERT_EQ (expected2, actual2);
+
+    char buf[100];
+    omnmmsgFieldPayload_getAsString (field, mPayloadBase, buf, 100);
+    ASSERT_STREQ(buf, "242355");
+
+    field = omnmmsgPayloadIter_next(iterOpaque, NULL, mPayloadBase);
+    omnmmsgFieldPayload_getFid (field, NULL, NULL, &fidactual);
+    omnmmsgFieldPayload_getType (field, &typeactual);
+    omnmmsgFieldPayload_getString (field, &actual3);
+    ASSERT_EQ (MAMA_FIELD_TYPE_STRING, typeactual);
+    ASSERT_EQ (fid3, fidactual);
+    ASSERT_STREQ (expected3, actual3);
+
+    field = omnmmsgPayloadIter_next(iterOpaque, NULL, mPayloadBase);
+    ASSERT_EQ (NULL, field);
+}
+
+TEST_F(OmnmTests, SerializeDeserialize2)
+{
+    omnmIterImpl iter;
+    msgPayloadIter iterOpaque = (msgPayloadIter)&iter;
+
+    msgFieldPayload field;
+    mama_fid_t fid1 = 100;
+    mama_i64_t actual1 = 0;
+    mama_i64_t expected1 = 12398;
 
     mama_fid_t fid2 = 101;
     mama_i64_t actual2 = 0;
@@ -265,8 +326,7 @@ TEST_F(OmnmTests, IteratorTest)
     mama_size_t serializedBufferSize = 0;
     omnmmsgPayload_serialize (mPayloadBase, &serializedBuffer, &serializedBufferSize);
     msgPayload copy = NULL;
-    omnmmsgPayload_create (&copy);
-    omnmmsgPayload_unSerialize (copy, (const void**)serializedBuffer, serializedBufferSize);
+    omnmmsgPayload_createFromByteBuffer(&copy, NULL, serializedBuffer, serializedBufferSize);
 
     omnmIterImpl iter2;
     msgPayloadIter iterOpaque2 = (msgPayloadIter)&iter2;
