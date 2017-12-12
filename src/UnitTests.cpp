@@ -251,6 +251,7 @@ TEST_F(OmnmTests, SerializeDeserialize2)
 
     mama_fid_t fid4 = 103;
     const char* name4 = "opaque_field1";
+    const char* initial4 = "initial opaque value 1";
     const char* expected4 = "opaque value 1";
 
     mama_fid_t fidactual = 0;
@@ -260,7 +261,9 @@ TEST_F(OmnmTests, SerializeDeserialize2)
     omnmmsgPayload_addI64 (mPayloadBase, NULL, fid1, expected1);
     omnmmsgPayload_addI64 (mPayloadBase, NULL, fid2, expected2);
     omnmmsgPayload_addString (mPayloadBase, NULL, fid3, expected3);
-    omnmmsgPayload_addOpaque (mPayloadBase, name4, fid4, expected4, strlen(expected4));
+    omnmmsgPayload_addOpaque (mPayloadBase, name4, fid4, initial4, strlen(initial4)+1);
+    omnmmsgPayload_updateOpaque (mPayloadBase, name4, fid4, expected4, strlen(expected4)+1);
+
 
     omnmmsgPayloadIterImpl_init (&iter, (OmnmPayloadImpl*)mPayloadBase);
 
