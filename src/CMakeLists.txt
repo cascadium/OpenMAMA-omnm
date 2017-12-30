@@ -1,6 +1,4 @@
 include_directories(.)
-include_directories(${MAMA_SRC}/mama/c_cpp/src/c)
-include_directories(${MAMA_SRC}/common/c_cpp/src/c)
 include_directories(${MAMA_ROOT}/include)
 include_directories(${GTEST_ROOT}/include)
 
@@ -14,7 +12,7 @@ link_directories(${MAMA_ROOT}/lib/dynamic)
 link_directories(${MAMA_ROOT}/lib/dynamic-debug)
 link_directories(${GTEST_ROOT}/lib)
 
-add_definitions(-DBRIDGE -DMAMA_DLL)
+add_definitions(-DBRIDGE -DMAMA_DLL -DOPENMAMA_INTEGRATION)
 
 add_library(mamaomnmmsgimpl
             MODULE Field.cpp
@@ -34,6 +32,9 @@ if(WIN32)
                           libwombatcommon${MAMA_LIB_SUFFIX}
                           libmamac${MAMA_LIB_SUFFIX})
     set_target_properties(mamaomnmmsgimpl PROPERTIES PREFIX "lib")
+
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+
     # Windows Targets
     install(TARGETS mamaomnmmsgimpl
             CONFIGURATIONS Release

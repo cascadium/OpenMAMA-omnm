@@ -29,19 +29,19 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 #include <mama/mama.h>
 #include <mama/price.h>
-
-#include "payloadbridge.h"
-#include "msgfieldimpl.h"
-#include "msgimpl.h"
 
 #include "omnmmsgpayloadfunctions.h"
 #include <wombat/strutils.h>
 #include <wombat/memnode.h>
 #include <stddef.h>
-#include <priceimpl.h>
+#include <mama/integration/types.h>
+#include <mama/integration/mama.h>
+#include <mama/integration/msg.h>
+#include <mama/integration/msgfield.h>
 #include "Payload.h"
 #include "Iterator.h"
 
@@ -296,7 +296,7 @@ void
 OmnmPayloadImpl::convertOmnmDateTimeToMamaDateTime (omnmDateTime* from, mamaDateTime to)
 {
     mamaDateTime_setWithHints(to,
-                              from->mSeconds,
+                              (mama_u32_t)from->mSeconds,
                               from->mNanoseconds / 1000,
                               (mamaDateTimePrecision)from->mPrecision,
                               (mamaDateTimeHints)from->mHints);
@@ -565,7 +565,7 @@ OmnmPayloadImpl::updateField (mamaFieldType type, omnmFieldImpl& field,
             // This will point to the target location of the first field after inserted field
             uint8_t* origin = mPayloadBuffer + nextByteOffset;
             // This will correspond to the number of remaining bytes after the updated field
-            uint32_t size = mPayloadBufferTail - nextByteOffset;
+            size_t size = mPayloadBufferTail - nextByteOffset;
             // Finally move the memory across
             memmove ((void*)(origin + delta), origin, size);
         }
@@ -828,7 +828,6 @@ omnmmsgPayload_iterateFields (const msgPayload    msg,
 {
     omnmIterImpl        iter;
     OmnmPayloadImpl*    impl            = (OmnmPayloadImpl*) msg;
-    mamaMsgFieldImpl*   mamaField       = (mamaMsgFieldImpl*) field;
     msgFieldPayload     fieldPayload    = NULL;
 
     if (NULL == msg || NULL == parent || NULL == cb || NULL == field)
@@ -845,7 +844,7 @@ omnmmsgPayload_iterateFields (const msgPayload    msg,
 
     while (NULL != (fieldPayload = omnmmsgPayloadIter_next(iterOpaque, NULL, msg)))
     {
-        mamaMsgFieldImpl_setPayload (mamaField, fieldPayload);
+        mamaMsgFieldImpl_setPayload (field, fieldPayload);
         cb (parent, field, closure);
     }
 

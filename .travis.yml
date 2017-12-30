@@ -26,7 +26,7 @@ before_install:
   - git checkout next
   - export MAMA_SOURCE=$(pwd)
   - export MAMA_INSTALL=$MAMA_SOURCE/install
-  - export WOMBAT_PATH=$MAMA_SOURCE/OpenMAMA/mama/c_cpp/src/examples:$MAMA_SOURCE/OpenMAMA/mama/c_cpp/src/gunittest/c:$SOURCE_DIR/config
+  - export WOMBAT_PATH=$MAMA_SOURCE/mama/c_cpp/src/examples:$MAMA_SOURCE/mama/c_cpp/src/gunittest/c:$SOURCE_DIR/config
   - export LD_LIBRARY_PATH=$MAMA_INSTALL/lib:/usr/local/lib:/usr/local/lib64:$SOURCE_DIR/lib
   - export PATH=$(echo ~/OpenMAMA/install/bin):$PATH
   - "cd /usr/src/gtest && sudo cmake . && sudo cmake --build . && sudo mv libg* /usr/local/lib/ ; cd -"

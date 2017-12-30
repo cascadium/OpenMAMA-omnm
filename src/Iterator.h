@@ -26,7 +26,6 @@
 #define MAMA_BRIDGE_OMNM_ITER_H__
 
 #include <mama/status.h>
-#include <payloadbridge.h>
 #include <stdint.h>
 
 #include "Payload.h"

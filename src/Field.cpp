@@ -32,11 +32,7 @@
 
 #include <mama/mama.h>
 #include <mama/price.h>
-#include <priceimpl.h>
 #include <wombat/memnode.h>
-
-#include "payloadbridge.h"
-#include "msgfieldimpl.h"
 
 #include "Payload.h"
 #include "omnmmsgpayloadfunctions.h"

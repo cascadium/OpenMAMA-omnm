@@ -28,6 +28,7 @@
 #include <mama/mama.h>
 #include <mama/price.h>
 #include <wombat/strutils.h>
+#include <mama/integration/types.h>
 
 class OmnmPayloadImpl;
 

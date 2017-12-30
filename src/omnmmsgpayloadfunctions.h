@@ -25,8 +25,7 @@
 #ifndef MAMA_PAYLOAD_OMNMMSG_OMNMMSGIMPL_H__
 #define MAMA_PAYLOAD_OMNMMSG_OMNMMSGIMPL_H__
 
-#include "bridge.h"
-#include "payloadbridge.h"
+#include <mama/integration/types.h>
 
 #if defined(__cplusplus)
 extern "C" {
