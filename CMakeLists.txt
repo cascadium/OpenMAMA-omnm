@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.8.7)
 project (OpenMAMA-omnm)
 
 if(UNIX)
-    file(GLOB DEFAULT_MAMA_ROOT ../OpenMAMA/openmama_install_*)
+    file(GLOB DEFAULT_MAMA_ROOT /opt/openmama)
     set(DEFAULT_GTEST_ROOT "/usr/local")
 else()
     if(CMAKE_CL_64)
