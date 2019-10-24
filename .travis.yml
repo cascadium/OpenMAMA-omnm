@@ -12,11 +12,11 @@ notifications:
 before_install:
   - sudo apt update -qq
   - curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama/cfg/setup/bash.deb.sh' | sudo bash
-  - sudo apt install -y openmama
+  - sudo apt install -y openmama libgtest-dev
 
 script:
  - git clone https://github.com/OpenMAMA/OpenMAMA.git om_src
- - cmake -DMAMA_ROOT=$MAMA_INSTALL -DGTEST_ROOT=/usr/local -DOPENMAMA_SRC=$(pwd)/om_src -DCMAKE_INSTALL_PREFIX=$(pwd) .
+ - cmake -DOPENMAMA_SRC=$(pwd)/om_src -DCMAKE_INSTALL_PREFIX=$(pwd) .
  - make install
  - ./bin/unittests
  - ./bin/UnitTestMamaMsgC -m qpid -p omnmmsg -i O
