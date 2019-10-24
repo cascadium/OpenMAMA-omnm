@@ -15,11 +15,10 @@ before_install:
   - sudo apt install -y openmama libgtest-dev
 
 script:
- - (mkdir gtest_bld && cd gtest_bld && cmake /usr/src/googletest/googletest -DCMAKE_INSTALL_PREFIX=/usr && make install)
+ - (mkdir gtest_bld && cd gtest_bld && cmake /usr/src/googletest/googletest -DCMAKE_INSTALL_PREFIX=/usr && sudo make install)
  - git clone https://github.com/OpenMAMA/OpenMAMA.git om_src
  - cmake -DOPENMAMA_SRC=$(pwd)/om_src -DCMAKE_INSTALL_PREFIX=$(pwd) .
  - make install
- - find / -type f -name "libgtest*"
  - ./bin/unittests
  - ./bin/UnitTestMamaMsgC -m qpid -p omnmmsg -i O
  - ./bin/UnitTestMamaPayloadC -m qpid -p omnmmsg -i O --gtest_filter=-PayloadSubMsgTests.UpdateSubMsg
