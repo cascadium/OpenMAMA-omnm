@@ -15,6 +15,7 @@ before_install:
   - sudo apt install -y openmama libgtest-dev
 
 script:
+ - (mkdir gtest_bld && cd gtest_bld && cmake /usr/src/googletest/googletest -DCMAKE_INSTALL_PREFIX=/usr && make install)
  - git clone https://github.com/OpenMAMA/OpenMAMA.git om_src
  - cmake -DOPENMAMA_SRC=$(pwd)/om_src -DCMAKE_INSTALL_PREFIX=$(pwd) .
  - make install
