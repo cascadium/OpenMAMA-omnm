@@ -15,7 +15,6 @@ before_install:
   - sudo apt install -y openmama
 
 script:
- - cd $SOURCE_DIR
  - git clone https://github.com/OpenMAMA/OpenMAMA.git om_src
  - cmake -DMAMA_ROOT=$MAMA_INSTALL -DGTEST_ROOT=/usr/local -DOPENMAMA_SRC=$SOURCE_DIR/om_src -DCMAKE_INSTALL_PREFIX=$(pwd) .
  - make install
