@@ -1,4 +1,5 @@
 language: c
+dist: bionic
 
 notifications:
   webhooks:
@@ -9,33 +10,15 @@ notifications:
     on_start: never     # options: [always|never|change] default: always
 
 before_install:
-  - export SOURCE_DIR=`pwd`
-  - sudo apt-get update -qq
-  - sudo apt-get install -y scons git flex uuid-dev libevent-dev cmake git libzmq3-dev libgtest-dev libapr1-dev
-  - cd
-  - wget https://github.com/apache/qpid-proton/archive/0.15.0.tar.gz -O proton.tgz
-  - tar xvf proton.tgz
-  - cd qpid-proton*
-  - mkdir build
-  - cd build
-  - cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_TESTING:BOOL=OFF -DBUILD_JAVA:BOOL=OFF
-  - sudo make install
-  - cd
-  - git clone https://github.com/fquinner/OpenMAMA.git
-  - cd OpenMAMA
-  - git checkout feature-bridge-public-headers
-  - export MAMA_SOURCE=$(pwd)
-  - export MAMA_INSTALL=$MAMA_SOURCE/install
-  - export WOMBAT_PATH=$MAMA_SOURCE/mama/c_cpp/src/examples:$MAMA_SOURCE/mama/c_cpp/src/gunittest/c:$SOURCE_DIR/config
-  - export LD_LIBRARY_PATH=$MAMA_INSTALL/lib:/usr/local/lib:/usr/local/lib64:$SOURCE_DIR/lib
-  - export PATH=$(echo ~/OpenMAMA/install/bin):$PATH
-  - "cd /usr/src/gtest && sudo cmake . && sudo cmake --build . && sudo mv libg* /usr/local/lib/ ; cd -"
-  - scons product=mama middleware=qpid with_unittest=y gtest_home=/usr/local prefix=#install
+  - sudo apt update -qq
+  - curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama/cfg/setup/bash.deb.sh' | sudo bash
+  - sudo apt install -y openmama
 
 script:
  - cd $SOURCE_DIR
- - cmake -DMAMA_ROOT=$MAMA_INSTALL -DGTEST_ROOT=/usr/local -DCMAKE_INSTALL_PREFIX=$(pwd) .
+ - git clone https://github.com/OpenMAMA/OpenMAMA.git om_src
+ - cmake -DMAMA_ROOT=$MAMA_INSTALL -DGTEST_ROOT=/usr/local -DOPENMAMA_SRC=$SOURCE_DIR/om_src -DCMAKE_INSTALL_PREFIX=$(pwd) .
  - make install
  - ./bin/unittests
- - UnitTestMamaMsgC -m qpid -p omnmmsg -i O
- - UnitTestMamaPayloadC -m qpid -p omnmmsg -i O --gtest_filter=-PayloadSubMsgTests.UpdateSubMsg
+ - ./bin/UnitTestMamaMsgC -m qpid -p omnmmsg -i O
+ - ./bin/UnitTestMamaPayloadC -m qpid -p omnmmsg -i O --gtest_filter=-PayloadSubMsgTests.UpdateSubMsg
