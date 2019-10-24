@@ -31,6 +31,7 @@ if(OPENMAMA_SRC)
     include_directories(${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c)
     include_directories(${OPENMAMA_SRC}/mama/c_cpp/src/c)
     link_directories(${MAMA_ROOT}/lib)
+    link_directories(${GTEST_ROOT}/lib)
 
     add_executable(UnitTestMamaMsgC
         ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/MainUnitTestC.cpp

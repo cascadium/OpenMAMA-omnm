@@ -18,6 +18,7 @@ script:
  - git clone https://github.com/OpenMAMA/OpenMAMA.git om_src
  - cmake -DOPENMAMA_SRC=$(pwd)/om_src -DCMAKE_INSTALL_PREFIX=$(pwd) .
  - make install
+ - find / -type f -name "libgtest*"
  - ./bin/unittests
  - ./bin/UnitTestMamaMsgC -m qpid -p omnmmsg -i O
  - ./bin/UnitTestMamaPayloadC -m qpid -p omnmmsg -i O --gtest_filter=-PayloadSubMsgTests.UpdateSubMsg
