@@ -1370,20 +1370,27 @@ omnmmsgPayload_addPrice (msgPayload      msg,
 }
 
 mama_status
-omnmmsgPayload_addMsg (msgPayload  msg,
-                       const char* name,
-                       mama_fid_t  fid,
-                       msgPayload  value)
+omnmmsgPayload_addMsg (msgPayload    msg,
+                       const char*   name,
+                       mama_fid_t    fid,
+                       const mamaMsg value)
 {
     OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
     const void* buffer = NULL;
     mama_size_t bufferLen = 0;
     mama_status status;
+    msgPayload payload;
 
     VALIDATE_NON_NULL(msg);
     VALIDATE_NON_NULL(value);
 
-    status = omnmmsgPayload_serialize (value, &buffer, &bufferLen);
+    status = mamaMsgImpl_getPayload(value, &payload);
+    if (MAMA_STATUS_OK != status)
+    {
+        return status;
+    }
+
+    status = omnmmsgPayload_serialize (payload, &buffer, &bufferLen);
     if (MAMA_STATUS_OK != status)
     {
         return status;

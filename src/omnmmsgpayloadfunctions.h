@@ -264,7 +264,7 @@ mama_status
 omnmmsgPayload_addMsg           (msgPayload          msg,
                                  const char*         name,
                                  mama_fid_t          fid,
-                                 msgPayload          value);
+                                 const mamaMsg       value);
 
 MAMAExpBridgeDLL
 mama_status
