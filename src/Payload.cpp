@@ -754,7 +754,6 @@ omnmmsgPayload_toString (const msgPayload msg)
     msgFieldPayload     fieldPayload    = NULL;
     mama_size_t         numFields       = 0;
     mama_size_t         charIdx         = 0; /* Opening Brace */
-    int                 fieldIdx        = 0;
     char                part[1024];
 
     if (NULL == msg) return NULL;
@@ -798,23 +797,20 @@ omnmmsgPayload_toString (const msgPayload msg)
             return NULL;
         }
 
-        if (0 == fieldIdx)
+        if (fid == 0)
         {
-            if (fid == 0)
-            {
-               charIdx += sprintf ((char*)impl->mField.mBuffer + charIdx,
-                                   "%s=%s",
-                                   fname ? fname : "",
-                                   part);
-            }
-            else
-            {
-               charIdx += sprintf ((char*)impl->mField.mBuffer + charIdx,
-                                   "%s[%u]=%s",
-                                   fname ? fname : "",
-                                   fid,
-                                   part);
-            }
+           charIdx += sprintf ((char*)impl->mField.mBuffer + charIdx,
+                               "%s=%s",
+                               fname ? fname : "",
+                               part);
+        }
+        else
+        {
+           charIdx += sprintf ((char*)impl->mField.mBuffer + charIdx,
+                               "%s[%u]=%s",
+                               fname ? fname : "",
+                               fid,
+                               part);
         }
 
         if (omnmmsgPayloadIter_hasNext (iterOpaque, msg))
@@ -823,7 +819,7 @@ omnmmsgPayload_toString (const msgPayload msg)
         }
     }
 
-    charIdx += sprintf((char*)impl->mField.mBuffer + charIdx, "}");
+    sprintf((char*)impl->mField.mBuffer + charIdx, "}");
 
     return (const char*) impl->mField.mBuffer;
 }
