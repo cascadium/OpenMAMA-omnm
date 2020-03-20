@@ -517,7 +517,7 @@ OmnmPayloadImpl::updateField (mamaFieldType type, const char* name,
 {
     omnmFieldImpl field;
 
-    if (NULL == buffer || 0 == bufferLen || (NULL == name && 0 == fid))
+    if (NULL == buffer || (NULL == name && 0 == fid))
     {
         return MAMA_STATUS_NULL_ARG;
     }
