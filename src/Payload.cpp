@@ -441,6 +441,8 @@ mama_status
 OmnmPayloadImpl::addField (mamaFieldType type, const char* name, mama_fid_t fid,
         uint8_t* buffer, size_t bufferLen)
 {
+    if (bufferLen > UINT32_MAX) return MAMA_STATUS_INVALID_ARG;
+
     const int nameLen = strlenEx(name) + 1;
 
     fieldHint fieldInfo;
@@ -497,7 +499,8 @@ OmnmPayloadImpl::addField (mamaFieldType type, const char* name, mama_fid_t fid,
     // If a variable width field, buffer will also need copy of size
     if (isFieldTypeSized(type))
     {
-        memcpy ((void*)insertPoint, (void*)&bufferLen, sizeof(mama_u32_t));
+        mama_u32_t len = (mama_u32_t) bufferLen;
+        memcpy ((void*)insertPoint, (void*)&len, sizeof(len));
         insertPoint += sizeof(mama_u32_t);
     }
 
@@ -593,7 +596,7 @@ OmnmPayloadImpl::updateField (mamaFieldType type, omnmFieldImpl& field,
             // This will point to the target location of the first field after inserted field
             uint8_t* origin = mPayloadBuffer + nextByteOffset;
             // This will correspond to the number of remaining bytes after the updated field
-            size_t size = mPayloadBufferTail - nextByteOffset;
+            uint32_t size = mPayloadBufferTail - nextByteOffset;
             // Finally move the memory across
             memmove ((void*)(origin + delta), origin, size);
         }
@@ -1376,8 +1379,8 @@ omnmmsgPayload_addString (msgPayload  msg,
                           const char* str)
 {
     VALIDATE_NON_NULL(msg);
+    VALIDATE_NON_NULL(str);
     OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
-    if (NULL == impl || NULL == str) return MAMA_STATUS_NULL_ARG;
     return impl->addField (MAMA_FIELD_TYPE_STRING,
                            name,
                            fid,
@@ -1393,8 +1396,8 @@ omnmmsgPayload_addOpaque (msgPayload  msg,
                           mama_size_t size)
 {
     VALIDATE_NON_NULL(msg);
+    VALIDATE_NON_NULL(opaque);
     OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
-    if (NULL == impl || NULL == opaque) return MAMA_STATUS_NULL_ARG;
     return impl->addField (MAMA_FIELD_TYPE_OPAQUE,
                            name,
                            fid,
@@ -1861,11 +1864,13 @@ omnmmsgPayload_updateVectorMsg (msgPayload          msg,
         const void* buffer = NULL;
         mama_size_t bufferLen = 0;
         mamaMsg_getByteBuffer(value[i], &buffer, &bufferLen);
+        if (bufferLen > UINT32_MAX) return MAMA_STATUS_INVALID_ARG;
+        mama_u32_t len = (mama_u32_t) bufferLen;
 
         /* Put size of each message before each message */
-        memcpy((void*)target, &bufferLen, sizeof(mama_u32_t));
+        memcpy((void*)target, &len, sizeof(len));
         target = target + sizeof(mama_u32_t);
-        memcpy((void*)target, buffer, bufferLen);
+        memcpy((void*)target, buffer, len);
         target += bufferLen;
     }
 
