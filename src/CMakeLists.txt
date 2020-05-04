@@ -21,21 +21,47 @@ add_library(mamaomnmmsgimpl
                    Payload.h)
 
 if(WIN32)
-    message(FATAL_ERROR "Windows not supported")
+    if (CMAKE_BUILD_TYPE MATCHES "Debug")
+        set(MAMA_LIB_SUFFIX "mdd")
+    else()
+        set(MAMA_LIB_SUFFIX "md")
+    endif()
+    target_link_libraries(mamaomnmmsgimpl
+                          libwombatcommon${MAMA_LIB_SUFFIX}
+                          libmamac${MAMA_LIB_SUFFIX})
+    set_target_properties(mamaomnmmsgimpl PROPERTIES PREFIX "lib")
+
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+
+    # Windows Targets
+    install(TARGETS mamaomnmmsgimpl
+            CONFIGURATIONS Release
+            DESTINATION bin/dynamic)
+    install(TARGETS mamaomnmmsgimpl
+            CONFIGURATIONS Debug
+            DESTINATION bin/dynamic-debug)
+
 elseif(UNIX)
+    add_library(mamaomnmmsgimpl-static
+                STATIC Field.cpp
+                       Iterator.cpp
+                       Iterator.h
+                       omnmmsgpayloadfunctions.h
+                       Payload.cpp
+                       Payload.h)
+   install(TARGETS mamaomnmmsgimpl-static DESTINATION lib)
+
    target_link_libraries(mamaomnmmsgimpl wombatcommon mama)
    install(TARGETS mamaomnmmsgimpl DESTINATION lib)
 
-   # static linking not supported w/tsan
-   if(NOT ENABLE_TSAN)
+   if( (NOT ENABLE_TSAN) AND (GTEST_ROOT) )
        # Only build unit tests on linux (AND we're not building for TSAN)
-       if (GTEST_ROOT)
-          include_directories(${GTEST_ROOT}/include)
-          link_directories(${GTEST_ROOT}/lib)
-          add_executable(unittests UnitTests.cpp)
-          target_link_libraries(unittests gtest mamaomnmmsgimpl pthread)
-          install(TARGETS unittests DESTINATION bin)
-       endif()
+       # (static linking not supported w/tsan)
+       include_directories(${GTEST_ROOT}/include)
+       link_directories(${GTEST_ROOT}/lib)
+       add_executable(unittests UnitTests.cpp)
+       target_link_libraries(unittests gtest mamaomnmmsgimpl pthread)
+       install(TARGETS unittests DESTINATION bin)
    endif()
 endif()
 
