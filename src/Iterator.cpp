@@ -59,6 +59,7 @@ omnmmsgPayloadIter_create (msgPayloadIter* iter,
     }
 
     impl = (omnmIterImpl*) calloc (1, sizeof (omnmIterImpl));
+    if (NULL == impl) return MAMA_STATUS_NOMEM;
 
     impl->mField.mParent  = msgImpl;
     impl->mMsg            = msgImpl;
@@ -97,7 +98,7 @@ omnmmsgPayloadIter_next (msgPayloadIter          iter,
 
     // Set field fid and advance buffer position
     impl->mField.mFid = *((mama_fid_t*) impl->mBufferPosition);
-    impl->mBufferPosition += sizeof(uint16_t);
+    impl->mBufferPosition += sizeof(mama_fid_t);
 
     // If field name is an empty string
     if (*impl->mBufferPosition != '\0')

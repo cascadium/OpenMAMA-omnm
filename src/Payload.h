@@ -341,10 +341,10 @@ public:
     // Underlying buffer to store the payload
     uint8_t*      mPayloadBuffer;
 
-    // This really reflects the capacity of mPayloadBuffermPayloadBufferTail
+    // This really reflects the capacity of mPayloadBuffer + PayloadBufferTail
     size_t        mPayloadBufferSize;
 
-    // Tail always points to the end of the 'useful' paromnt of the buffer, where
+    // Tail always points to the end of the 'useful' part of the buffer, where
     // the free space in the remaining buffer lives
     size_t        mPayloadBufferTail;
 
