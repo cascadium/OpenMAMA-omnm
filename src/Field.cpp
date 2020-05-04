@@ -166,7 +166,7 @@ omnmmsgFieldPayload_getName (msgFieldPayload         field,
     }
 
     /* If a name is part of field and it's not a NULL string */
-    if (NULL != impl->mName && strlen (impl->mName) > 0)
+    if (NULL != impl->mName && '\0' != *impl->mName)
     {
         *result = impl->mName;
     }
