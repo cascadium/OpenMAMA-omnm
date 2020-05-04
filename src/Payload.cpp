@@ -513,9 +513,7 @@ mama_status
 OmnmPayloadImpl::updateField (mamaFieldType type, omnmFieldImpl& field,
         uint8_t* buffer, size_t bufferLen)
 {
-    size_t sizeFieldBytes = 0;
-
-    if (NULL == buffer || 0 == bufferLen)
+    if (NULL == buffer)
     {
         return MAMA_STATUS_NULL_ARG;
     }
@@ -526,15 +524,10 @@ OmnmPayloadImpl::updateField (mamaFieldType type, omnmFieldImpl& field,
         return MAMA_STATUS_WRONG_FIELD_TYPE;
     }
 
-    if (isFieldTypeSized(field.mFieldType))
-    {
-        sizeFieldBytes = sizeof(mama_u32_t);
-    }
-
     // If buffer needs to expand or shrink
     if (bufferLen != field.mSize)
     {
-        int32_t delta = (int32_t)(sizeFieldBytes + bufferLen - field.mSize);
+        int32_t delta = (int32_t)(bufferLen - field.mSize);
 
         // This will be the new offset of next field after the move
         size_t nextByteOffset = ((uint8_t*)field.mData - mPayloadBuffer) +
