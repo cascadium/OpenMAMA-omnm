@@ -1115,17 +1115,25 @@ omnmmsgFieldPayload_getAsString       (const msgFieldPayload   field,
         const void* result   = NULL;
         mama_size_t dataSize = 0;
         status = omnmmsgFieldPayload_getOpaque (field, &result, &dataSize);
-
+        #if 1
+        sprintf(buffer, "{%ld bytes}", dataSize);
+        #else
+        // print the opaque field as a sequence of bytes 0x..
         if (status == MAMA_STATUS_OK) {
+           int l = len;
            char* temp = buffer;
-           for (mama_size_t s = 0; s < dataSize; s++)
+           for (mama_size_t s = 0; (s < dataSize) && (l > 0); s++)
            {
-               int i = snprintf (temp, len, "%#x ", ((char*) result)[s]);
-               temp += i;
-               len -= i;
-
+               int n = snprintf (temp, l, "%#x ", ((char*) result)[s]);
+               temp += n;
+               l -= n;
+           }
+           // need trailing null?
+           if (l <= 0) {
+              buffer[len-1] = '\0';
            }
         }
+        #endif
         break;
     }
     case MAMA_FIELD_TYPE_MSG:
