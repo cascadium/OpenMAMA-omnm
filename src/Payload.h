@@ -87,17 +87,17 @@ typedef struct omnmFieldImpl
 
 typedef struct omnmDateTime
 {
-    mama_u8_t  mHints;             /* Contains more information on how to parse */
     mama_i64_t mSeconds;           /* -ve means time before epoch */
     mama_u32_t mNanoseconds;
     mama_u8_t  mPrecision;
+    mama_u8_t  mHints;             /* Contains more information on how to parse */
     char       mTimezoneName[14];  /* https://en.wikipedia.org/wiki/Tz_database */
 } omnmDateTime;
 
 typedef struct omnmPrice
 {
-    mama_u8_t  mHints;             /* Contains more information on how to parse*/
     mama_f64_t mValue;
+    mama_u8_t  mHints;             /* Contains more information on how to parse*/
     char       mCurrency[3];       /* ISO 4217 3-character currency code */
 } omnmPrice;
 
