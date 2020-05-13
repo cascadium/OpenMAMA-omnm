@@ -13,7 +13,7 @@ link_directories(${MAMA_ROOT}/lib/dynamic-debug)
 add_definitions(-DBRIDGE -DMAMA_DLL -DOPENMAMA_INTEGRATION)
 
 add_library(mamaomnmmsgimpl
-            SHARED Field.cpp
+            MODULE Field.cpp
                    Iterator.cpp
                    Iterator.h
                    omnmmsgpayloadfunctions.h

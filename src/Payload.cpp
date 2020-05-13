@@ -170,7 +170,6 @@ OmnmPayloadImpl::OmnmPayloadImpl(const size_t bufferSize) : mPayloadBuffer(NULL)
 {
     mPayloadBufferSize           = bufferSize ? bufferSize : DEFAULT_PAYLOAD_SIZE;
     mPayloadBuffer               = (uint8_t*) malloc (mPayloadBufferSize);
-    //mPayloadBuffer               = (uint8_t*) calloc (mPayloadBufferSize, 1);
 
     // Initialize with defaults
     clear();

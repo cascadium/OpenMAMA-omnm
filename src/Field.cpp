@@ -931,7 +931,11 @@ omnmmsgFieldPayload_getAsString       (const msgFieldPayload   field,
     {
     case MAMA_FIELD_TYPE_BOOL:
     {
-        EXPAND_PRINT_SCALAR_MACROS (mama_bool_t, (mama_bool_t) 0, Bool, "%u", mama_bool_t);
+        EXPAND_PRINT_SCALAR_MACROS (mama_bool_t,
+                                    (mama_bool_t) 0,
+                                    Bool,
+                                    "%u",
+                                    mama_bool_t);
         break;
     }
     case MAMA_FIELD_TYPE_CHAR:
@@ -971,22 +975,38 @@ omnmmsgFieldPayload_getAsString       (const msgFieldPayload   field,
     }
     case MAMA_FIELD_TYPE_I64:
     {
-        EXPAND_PRINT_SCALAR_MACROS (mama_i64_t, 0, I64, "%lld", long long);
+        EXPAND_PRINT_SCALAR_MACROS (mama_i64_t,
+                                    0,
+                                    I64,
+                                    "%lld",
+                                    long long);
         break;
     }
     case MAMA_FIELD_TYPE_U64:
     {
-        EXPAND_PRINT_SCALAR_MACROS (mama_u64_t, 0, U64, "%llu", long long unsigned);
+        EXPAND_PRINT_SCALAR_MACROS (mama_u64_t,
+                                    0,
+                                    U64,
+                                    "%llu",
+                                    long long unsigned);
         break;
     }
     case MAMA_FIELD_TYPE_F32:
     {
-        EXPAND_PRINT_SCALAR_MACROS (mama_f32_t, (mama_f32_t)0.0, F32, "%f", mama_f32_t);
+        EXPAND_PRINT_SCALAR_MACROS (mama_f32_t,
+                                    (mama_f32_t)0.0,
+                                    F32,
+                                    "%f",
+                                    mama_f32_t);
         break;
     }
     case MAMA_FIELD_TYPE_F64:
     {
-        EXPAND_PRINT_SCALAR_MACROS (mama_f64_t, (mama_f64_t)0.0, F64, "%f", mama_f64_t);
+        EXPAND_PRINT_SCALAR_MACROS (mama_f64_t,
+                                    (mama_f64_t)0.0,
+                                    F64,
+                                    "%f",
+                                    mama_f64_t);
         break;
     }
     case MAMA_FIELD_TYPE_STRING:
@@ -1095,25 +1115,7 @@ omnmmsgFieldPayload_getAsString       (const msgFieldPayload   field,
         const void* result   = NULL;
         mama_size_t dataSize = 0;
         status = omnmmsgFieldPayload_getOpaque (field, &result, &dataSize);
-        #if 1
         sprintf(buffer, "{%ld bytes}", dataSize);
-        #else
-        // print the opaque field as a sequence of bytes 0x..
-        if (status == MAMA_STATUS_OK) {
-           int l = len;
-           char* temp = buffer;
-           for (mama_size_t s = 0; (s < dataSize) && (l > 0); s++)
-           {
-               int n = snprintf (temp, l, "%#x ", ((char*) result)[s]);
-               temp += n;
-               l -= n;
-           }
-           // need trailing null?
-           if (l <= 0) {
-              buffer[len-1] = '\0';
-           }
-        }
-        #endif
         break;
     }
     case MAMA_FIELD_TYPE_MSG:
