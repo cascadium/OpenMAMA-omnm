@@ -417,7 +417,6 @@ OmnmPayloadImpl::findFieldInBuffer (const char* name, mama_fid_t fid, omnmFieldI
            field.mFieldType = foundType;
            field.mFid       = foundFid;
            field.mName      = *foundName == '\0' ? NULL : foundName;
-           //field.mName      = foundName;
 
            if (isFieldTypeSized(foundType)) {
                field.mSize = *reinterpret_cast<mama_u32_t*>(fieldBegin + mFieldHints[index].nameLen + FIELD_TYPE_WIDTH + FID_WIDTH);
