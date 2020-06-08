@@ -18,8 +18,7 @@
 #define PADDING_FID 10004
 #define SEQ_NUM_FID 10
 
-//#define ITERATION_COUNT 100000000
-#define ITERATION_COUNT 10000
+#define ITERATION_COUNT 100000000
 #define ONE_MILLION 1000000
 
 using namespace Wombat;
