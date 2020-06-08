@@ -60,3 +60,9 @@ elseif(UNIX)
     install(TARGETS unittests DESTINATION bin)
 endif()
 
+# Benchmarking utility
+add_executable(OmnmBenchmark
+        Benchmarker.cpp
+        Benchmarker.h
+)
+target_link_libraries(OmnmBenchmark mamaomnmmsgimpl-static wombatcommon mama mamacpp pthread)
