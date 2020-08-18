@@ -29,6 +29,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#ifndef __STDC_LIMIT_MACROS
+#define __STDC_LIMIT_MACROS
+#endif
 #include <stdint.h>
 
 #include <mama/mama.h>
@@ -158,18 +161,19 @@ do                                                                             \
   =                  Private implementation prototypes                    =
   =========================================================================*/
 
-OmnmPayloadImpl::OmnmPayloadImpl() : mPayloadBuffer(NULL),
+OmnmPayloadImpl::OmnmPayloadImpl(const size_t bufferSize) : mPayloadBuffer(NULL),
                                      mPayloadBufferSize(0),
                                      mPayloadBufferTail(0),
                                      mField(), /* Inline struct member */
                                      mHeader(),
                                      mParent(NULL)
 {
-    mPayloadBufferSize           = DEFAULT_PAYLOAD_SIZE;
-    mPayloadBuffer               = (uint8_t*) calloc (mPayloadBufferSize, 1);
+    mPayloadBufferSize           = bufferSize ? bufferSize : DEFAULT_PAYLOAD_SIZE;
+    mPayloadBuffer               = (uint8_t*) malloc (mPayloadBufferSize);
 
     // Initialize with defaults
     clear();
+    mFieldHints.reserve(20);
 }
 
 OmnmPayloadImpl::~OmnmPayloadImpl()
@@ -201,9 +205,9 @@ OmnmPayloadImpl::isFieldTypeSized (mamaFieldType   type)
         case MAMA_FIELD_TYPE_F64:
         case MAMA_FIELD_TYPE_TIME:
         case MAMA_FIELD_TYPE_PRICE:
-        case MAMA_FIELD_TYPE_STRING:
             return false;
             break;
+        case MAMA_FIELD_TYPE_STRING:
         case MAMA_FIELD_TYPE_MSG:
         case MAMA_FIELD_TYPE_OPAQUE:
         case MAMA_FIELD_TYPE_COLLECTION:
@@ -277,6 +281,36 @@ OmnmPayloadImpl::isFieldTypeFixedWidth (mamaFieldType type)
             return false;
             break;
     }
+}
+
+size_t
+OmnmPayloadImpl::getSizeOfFieldType(mamaFieldType type)
+{
+   switch (type) {
+      case MAMA_FIELD_TYPE_BOOL:
+      case MAMA_FIELD_TYPE_CHAR:
+      case MAMA_FIELD_TYPE_I8:
+      case MAMA_FIELD_TYPE_U8:
+         return sizeof(mama_u8_t);
+      case MAMA_FIELD_TYPE_I16:
+      case MAMA_FIELD_TYPE_U16:
+         return sizeof(mama_u16_t);
+      case MAMA_FIELD_TYPE_I32:
+      case MAMA_FIELD_TYPE_U32:
+      case MAMA_FIELD_TYPE_F32:
+      case MAMA_FIELD_TYPE_QUANTITY:
+         return sizeof(mama_u32_t);
+      case MAMA_FIELD_TYPE_I64:
+      case MAMA_FIELD_TYPE_U64:
+      case MAMA_FIELD_TYPE_F64:
+         return sizeof(mama_u64_t);
+      case MAMA_FIELD_TYPE_PRICE:
+         return sizeof(omnmPrice);
+      case MAMA_FIELD_TYPE_TIME:
+         return sizeof(omnmDateTime);
+      default:
+         return 0;
+   }
 }
 
 bool
@@ -359,6 +393,8 @@ OmnmPayloadImpl::clear()
     // NULL initialize the buffer after the first byte
     memset ((void*)(mPayloadBuffer + mPayloadBufferTail), 0, mPayloadBufferSize - mPayloadBufferTail);
 
+    mFieldHints.clear();
+
     return MAMA_STATUS_OK;
 }
 
@@ -371,39 +407,31 @@ OmnmPayloadImpl::getHeaderSize()
 mama_status
 OmnmPayloadImpl::findFieldInBuffer (const char* name, mama_fid_t fid, omnmFieldImpl& field)
 {
-    // Initialize the iterator struct on the stack for speed
-    omnmIterImpl   iter;
-    omnmFieldImpl* fieldCandidate;
+    for (size_t index = 0; index < mFieldHints.size(); ++index) {
+      uint8_t* fieldBegin = mPayloadBuffer + mFieldHints[index].fieldOffset;
+      const mama_fid_t foundFid = *reinterpret_cast<mama_fid_t*>(fieldBegin + FIELD_TYPE_WIDTH);
+      const char* foundName = reinterpret_cast<const char*>(fieldBegin + FIELD_TYPE_WIDTH + FID_WIDTH);
 
-    // NULL initialize any provided field
-    //memset (&field, 0, sizeof(field));
+      if ((name != NULL && strcmp(name, foundName) == 0) || (0 != fid && fid == foundFid)) {
+           const mamaFieldType foundType  = static_cast<mamaFieldType>(*fieldBegin);
+           field.mFieldType = foundType;
+           field.mFid       = foundFid;
+           field.mName      = *foundName == '\0' ? NULL : foundName;
 
-    // This is really just for type casting so we can easily use bridge
-    // iterator methods directly
-    msgPayloadIter iterOpaque = (msgPayloadIter)&iter;
+           if (isFieldTypeSized(foundType)) {
+               field.mSize = *reinterpret_cast<mama_u32_t*>(fieldBegin + mFieldHints[index].nameLen + FIELD_TYPE_WIDTH + FID_WIDTH);
+               field.mData = reinterpret_cast<void*>(fieldBegin + mFieldHints[index].nameLen + FIELD_TYPE_WIDTH + FID_WIDTH + sizeof(mama_u32_t));
+           }
+           else {
+               field.mSize = getSizeOfFieldType(foundType);
+               field.mData = reinterpret_cast<void*>(fieldBegin + mFieldHints[index].nameLen + FIELD_TYPE_WIDTH + FID_WIDTH);
+           }
 
-    // Initialize the iterator for this message
-    omnmmsgPayloadIterImpl_init (&iter, this);
+           field.mParent    = this;
+           field.mIndex     = index;
 
-    // Iterate over all fields until
-    while (NULL != (fieldCandidate = (omnmFieldImpl*)omnmmsgPayloadIter_next (iterOpaque, NULL, this)))
-    {
-        // Fid match - found the field
-        if ( ((0 != fid) && (fid == fieldCandidate->mFid))
-          || ((name != NULL) && (fieldCandidate->mName != NULL) && (0 == strcmp (name, fieldCandidate->mName))) )
-        {
-            // Copy the field's data to the provided onmnFieldImpl
-            //memcpy (&field, fieldCandidate, sizeof(omnmFieldImpl));
-            /* Itemize as field also holds accumulative data structures */
-            field.mFieldType = fieldCandidate->mFieldType;
-            field.mFid       = fieldCandidate->mFid;
-            field.mName      = fieldCandidate->mName;
-            field.mSize      = fieldCandidate->mSize;
-            field.mData      = fieldCandidate->mData;
-            field.mParent    = fieldCandidate->mParent;
-
-            return MAMA_STATUS_OK;
-        }
+           return  MAMA_STATUS_OK;
+      }
     }
 
     // If we got this far, no match has been found
@@ -414,12 +442,18 @@ mama_status
 OmnmPayloadImpl::addField (mamaFieldType type, const char* name, mama_fid_t fid,
         uint8_t* buffer, size_t bufferLen)
 {
-    // We will insert at the tail
-    uint8_t* insertPoint = mPayloadBuffer + mPayloadBufferTail;
+    if (bufferLen > UINT32_MAX) return MAMA_STATUS_INVALID_ARG;
+
+    const int nameLen = strlenEx(name) + 1;
+
+    fieldHint fieldInfo;
+    fieldInfo.nameLen = nameLen;
+    fieldInfo.fieldOffset = mPayloadBufferTail;
+    mFieldHints.push_back(fieldInfo);
 
     // New tail will be comprised of type, fid, field
     size_t newTailOffset = mPayloadBufferTail + FIELD_TYPE_WIDTH + FID_WIDTH +
-            strlenEx(name) + 1 + bufferLen;
+            nameLen + bufferLen;
 
     if (NULL == buffer || 0 == bufferLen || (NULL == name && 0 == fid))
     {
@@ -440,7 +474,7 @@ OmnmPayloadImpl::addField (mamaFieldType type, const char* name, mama_fid_t fid,
                           newTailOffset);
 
     // Will insert at wherever the current tail is
-    insertPoint = mPayloadBuffer + mPayloadBufferTail;
+    uint8_t* insertPoint = mPayloadBuffer + mPayloadBufferTail;
 
     // Update the field type
     *insertPoint = (uint8_t)type;
@@ -459,14 +493,15 @@ OmnmPayloadImpl::addField (mamaFieldType type, const char* name, mama_fid_t fid,
     else
     {
         // Copy string including terminator
-        memcpy ((void*)insertPoint, name, strlen(name) + 1);
-        insertPoint += strlen(name) + 1;
+        memcpy ((void*)insertPoint, name, nameLen);
+        insertPoint += nameLen;
     }
 
     // If a variable width field, buffer will also need copy of size
     if (isFieldTypeSized(type))
     {
-        memcpy ((void*)insertPoint, (void*)&bufferLen, sizeof(mama_u32_t));
+        mama_u32_t len = (mama_u32_t) bufferLen;
+        memcpy ((void*)insertPoint, (void*)&len, sizeof(len));
         insertPoint += sizeof(mama_u32_t);
     }
 
@@ -486,7 +521,7 @@ OmnmPayloadImpl::updateField (mamaFieldType type, const char* name,
 {
     omnmFieldImpl field;
 
-    if (NULL == buffer || 0 == bufferLen || (NULL == name && 0 == fid))
+    if (NULL == buffer || (NULL == name && 0 == fid))
     {
         return MAMA_STATUS_NULL_ARG;
     }
@@ -513,9 +548,7 @@ mama_status
 OmnmPayloadImpl::updateField (mamaFieldType type, omnmFieldImpl& field,
         uint8_t* buffer, size_t bufferLen)
 {
-    size_t sizeFieldBytes = 0;
-
-    if (NULL == buffer || 0 == bufferLen)
+    if (NULL == buffer)
     {
         return MAMA_STATUS_NULL_ARG;
     }
@@ -526,15 +559,14 @@ OmnmPayloadImpl::updateField (mamaFieldType type, omnmFieldImpl& field,
         return MAMA_STATUS_WRONG_FIELD_TYPE;
     }
 
-    if (isFieldTypeSized(field.mFieldType))
-    {
-        sizeFieldBytes = sizeof(mama_u32_t);
-    }
-
     // If buffer needs to expand or shrink
     if (bufferLen != field.mSize)
     {
-        int32_t delta = (int32_t)(sizeFieldBytes + bufferLen - field.mSize);
+        int32_t delta = (int32_t)(bufferLen - field.mSize);
+        // Every field after this field has been either pushed forward or back by delta
+        for (size_t i = field.mIndex + 1; i < mFieldHints.size(); ++i) {
+          mFieldHints[i].fieldOffset += delta;
+        }
 
         // This will be the new offset of next field after the move
         size_t nextByteOffset = ((uint8_t*)field.mData - mPayloadBuffer) +
@@ -565,7 +597,7 @@ OmnmPayloadImpl::updateField (mamaFieldType type, omnmFieldImpl& field,
             // This will point to the target location of the first field after inserted field
             uint8_t* origin = mPayloadBuffer + nextByteOffset;
             // This will correspond to the number of remaining bytes after the updated field
-            size_t size = mPayloadBufferTail - nextByteOffset;
+            uint32_t size = mPayloadBufferTail - nextByteOffset;
             // Finally move the memory across
             memmove ((void*)(origin + delta), origin, size);
         }
@@ -658,7 +690,6 @@ omnmmsgPayload_copy (const msgPayload    msg,
                      msgPayload*         copy)
 {
     OmnmPayloadImpl*  impl        = (OmnmPayloadImpl*) msg;
-    mama_status       status      = MAMA_STATUS_OK;
 
     if (NULL == msg || NULL == copy)
     {
@@ -671,11 +702,8 @@ omnmmsgPayload_copy (const msgPayload    msg,
      */
     if (NULL == *copy)
     {
-        status = omnmmsgPayload_create (copy);
-        if (MAMA_STATUS_OK != status)
-        {
-            return status;
-        }
+        OmnmPayloadImpl* implCopy = new OmnmPayloadImpl(impl->mPayloadBufferTail);
+        *copy = (msgPayload) implCopy;
     }
 
     return omnmmsgPayload_unSerialize ((OmnmPayloadImpl*) *copy,
@@ -712,25 +740,11 @@ mama_status
 omnmmsgPayload_getNumFields (const msgPayload    msg,
                              mama_size_t*        numFields)
 {
-    omnmIterImpl        iter;
     OmnmPayloadImpl*    impl            = (OmnmPayloadImpl*) msg;
-    mama_size_t         count           = 0;
 
     if (NULL == msg || NULL == numFields) return MAMA_STATUS_NULL_ARG;
 
-    // This is really just for type casting so we can easily use bridge
-    // iterator methods directly
-    msgPayloadIter iterOpaque = (msgPayloadIter)&iter;
-
-    // Initialize the iterator for this message
-    omnmmsgPayloadIterImpl_init (&iter, impl);
-
-    // Iterate over all fields
-    while (NULL != omnmmsgPayloadIter_next(iterOpaque, NULL, msg))
-    {
-        count++;
-    }
-    *numFields = count;
+    *numFields = impl->mFieldHints.size();
 
     return MAMA_STATUS_OK;
 }
@@ -912,6 +926,39 @@ omnmmsgPayload_unSerialize (const msgPayload    msg,
     // Move tail to end of buffer
     impl->mPayloadBufferTail = bufferLength;
 
+    impl->mFieldHints.clear();
+
+    uint8_t* bufferBegin = (uint8_t*) buffer;
+    size_t offset = sizeof(header);
+    int index = 0;
+    while (offset < bufferLength) {
+       fieldHint hint;
+       hint.fieldOffset = offset;
+
+       // 1st field is type
+       const mamaFieldType fieldType = static_cast<mamaFieldType>(*(bufferBegin + offset));
+       ++offset;
+
+       // 2nd field is fid
+       offset += sizeof(mama_fid_t);
+
+       // 3rd field is name, extra \0 since fieldName is optional
+       hint.nameLen = strlenEx(reinterpret_cast<const char*>(bufferBegin + offset)) + 1;
+       offset += hint.nameLen;
+
+       // 4th field (optional) is size of data, if not present use size based on field type
+       if (OmnmPayloadImpl::isFieldTypeSized(fieldType)) {
+         offset += *reinterpret_cast<mama_u32_t*>(bufferBegin + offset);
+         offset += sizeof(mama_u32_t);
+       }
+       else {
+         offset += OmnmPayloadImpl::getSizeOfFieldType(fieldType);
+       }
+
+       ++index;
+       impl->mFieldHints.push_back(hint);
+    }
+
     return MAMA_STATUS_OK;
 }
 
@@ -947,7 +994,10 @@ omnmmsgPayload_createFromByteBuffer (msgPayload*         msg,
 {
     if (NULL == msg || NULL == buffer) return MAMA_STATUS_NULL_ARG;
     if (0 == bufferLength) return MAMA_STATUS_INVALID_ARG;
-    omnmmsgPayload_create (msg);
+
+    OmnmPayloadImpl* impl = new OmnmPayloadImpl(bufferLength);
+    *msg = (msgPayload) impl;
+
     return omnmmsgPayload_unSerialize (*msg, (const void**)buffer, bufferLength);
 }
 
@@ -1330,8 +1380,8 @@ omnmmsgPayload_addString (msgPayload  msg,
                           const char* str)
 {
     VALIDATE_NON_NULL(msg);
+    VALIDATE_NON_NULL(str);
     OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
-    if (NULL == impl || NULL == str) return MAMA_STATUS_NULL_ARG;
     return impl->addField (MAMA_FIELD_TYPE_STRING,
                            name,
                            fid,
@@ -1347,8 +1397,8 @@ omnmmsgPayload_addOpaque (msgPayload  msg,
                           mama_size_t size)
 {
     VALIDATE_NON_NULL(msg);
+    VALIDATE_NON_NULL(opaque);
     OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
-    if (NULL == impl || NULL == opaque) return MAMA_STATUS_NULL_ARG;
     return impl->addField (MAMA_FIELD_TYPE_OPAQUE,
                            name,
                            fid,
@@ -1815,11 +1865,13 @@ omnmmsgPayload_updateVectorMsg (msgPayload          msg,
         const void* buffer = NULL;
         mama_size_t bufferLen = 0;
         mamaMsg_getByteBuffer(value[i], &buffer, &bufferLen);
+        if (bufferLen > UINT32_MAX) return MAMA_STATUS_INVALID_ARG;
+        mama_u32_t len = (mama_u32_t) bufferLen;
 
         /* Put size of each message before each message */
-        memcpy((void*)target, &bufferLen, sizeof(mama_u32_t));
+        memcpy((void*)target, &len, sizeof(len));
         target = target + sizeof(mama_u32_t);
-        memcpy((void*)target, buffer, bufferLen);
+        memcpy((void*)target, buffer, len);
         target += bufferLen;
     }
 

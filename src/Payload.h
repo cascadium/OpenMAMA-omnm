@@ -30,6 +30,8 @@
 #include <wombat/strutils.h>
 #include <mama/integration/types.h>
 
+#include <vector>
+
 class OmnmPayloadImpl;
 
 #define VALIDATE_MAMA_STATUS_OK(STATUS)                                        \
@@ -44,7 +46,7 @@ do                                                                             \
 {                                                                              \
     if (NULL == NAME && 0 == FID)                                              \
         return MAMA_STATUS_NULL_ARG;                                           \
-    else if (0 == strlenEx(NAME) && 0 == FID)                                  \
+    else if (0 == FID && '\0' == *NAME)                                        \
         return MAMA_STATUS_INVALID_ARG;                                        \
 } while (0)
 
@@ -54,6 +56,11 @@ do                                                                             \
     if (NULL == VALUE)                                                         \
         return MAMA_STATUS_NULL_ARG;                                           \
 } while (0)
+
+struct fieldHint {
+   int fieldOffset;     // Offset of field from beginning of message
+   int nameLen;         // Lenght of field name (including \0 terminator)
+};
 
 typedef struct omnmFieldImpl
 {
@@ -75,21 +82,22 @@ typedef struct omnmFieldImpl
     mama_size_t         mVectorDateTimeLen;
     mamaPrice*          mVectorPrice;
     mama_size_t         mVectorPriceLen;
+    int                 mIndex; // Field position from start
 } omnmFieldImpl;
 
 typedef struct omnmDateTime
 {
-    mama_u8_t  mHints;             /* Contains more information on how to parse */
     mama_i64_t mSeconds;           /* -ve means time before epoch */
     mama_u32_t mNanoseconds;
     mama_u8_t  mPrecision;
+    mama_u8_t  mHints;             /* Contains more information on how to parse */
     char       mTimezoneName[14];  /* https://en.wikipedia.org/wiki/Tz_database */
 } omnmDateTime;
 
 typedef struct omnmPrice
 {
-    mama_u8_t  mHints;             /* Contains more information on how to parse*/
     mama_f64_t mValue;
+    mama_u8_t  mHints;             /* Contains more information on how to parse*/
     char       mCurrency[3];       /* ISO 4217 3-character currency code */
 } omnmPrice;
 
@@ -111,7 +119,7 @@ typedef omnmHeaderV1 omnmHeader;
 
 class OmnmPayloadImpl {
 public:
-    OmnmPayloadImpl();
+    OmnmPayloadImpl(const size_t bufferSize = 200);
     ~OmnmPayloadImpl();
 
     // Templatized function for casting buffers to data types by lookup
@@ -311,6 +319,9 @@ public:
     static bool
     isFieldTypeFixedWidth (mamaFieldType type);
 
+    static size_t
+    getSizeOfFieldType(mamaFieldType type);
+
     static bool
     areFieldTypesCastable (mamaFieldType from, mamaFieldType to);
 
@@ -341,10 +352,10 @@ public:
     // Underlying buffer to store the payload
     uint8_t*      mPayloadBuffer;
 
-    // This really reflects the capacity of mPayloadBuffermPayloadBufferTail
+    // This really reflects the capacity of mPayloadBuffer + PayloadBufferTail
     size_t        mPayloadBufferSize;
 
-    // Tail always points to the end of the 'useful' paromnt of the buffer, where
+    // Tail always points to the end of the 'useful' part of the buffer, where
     // the free space in the remaining buffer lives
     size_t        mPayloadBufferTail;
 
@@ -356,6 +367,9 @@ public:
 
     // Meta data for the payload
     omnmHeader    mHeader;
+
+    // Offset information for all fields
+    std::vector<fieldHint>   mFieldHints;
 private:
     // Find the field inside the buffer and populate provided field with its
     // location

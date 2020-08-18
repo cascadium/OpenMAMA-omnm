@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
+
 /*=========================================================================
   =                             Includes                                  =
   =========================================================================*/
@@ -166,7 +166,7 @@ omnmmsgFieldPayload_getName (msgFieldPayload         field,
     }
 
     /* If a name is part of field and it's not a NULL string */
-    if (NULL != impl->mName && strlen (impl->mName) > 0)
+    if (NULL != impl->mName && '\0' != *impl->mName)
     {
         *result = impl->mName;
     }
@@ -514,7 +514,12 @@ omnmmsgFieldPayload_getOpaque (const msgFieldPayload   field,
         return MAMA_STATUS_WRONG_FIELD_TYPE;
     }
 
-    return impl->mParent->getFieldValueAsBuffer (*impl, result);
+    mama_status status = impl->mParent->getFieldValueAsBuffer (*impl, result);
+    if (status == MAMA_STATUS_OK) {
+       *size = impl->mSize;
+    }
+
+    return status;
 }
 
 /*
@@ -590,7 +595,7 @@ omnmmsgFieldPayload_getPrice (const msgFieldPayload   field,
         default:
             return MAMA_STATUS_WRONG_FIELD_TYPE;
             break;
-    }  
+    }
 }
 
 mama_status
@@ -1109,14 +1114,8 @@ omnmmsgFieldPayload_getAsString       (const msgFieldPayload   field,
     {
         const void* result   = NULL;
         mama_size_t dataSize = 0;
-        mama_size_t s        = 0;
-
         status = omnmmsgFieldPayload_getOpaque (field, &result, &dataSize);
-
-        for (s = 0; s < dataSize; s++)
-        {
-            snprintf (buffer, len, "%#x ", ((char*) result)[s]);
-        }
+        sprintf(buffer, "{%ld bytes}", dataSize);
         break;
     }
     case MAMA_FIELD_TYPE_MSG:
