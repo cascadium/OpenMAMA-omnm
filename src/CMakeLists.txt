@@ -70,4 +70,4 @@ add_executable(OmnmBenchmark
         Benchmarker.cpp
         Benchmarker.h
 )
-target_link_libraries(OmnmBenchmark mamaomnmmsgimpl-static wombatcommon mama mamacpp pthread)
+target_link_libraries(OmnmBenchmark mamaomnmmsgimpl wombatcommon mama mamacpp pthread)
