@@ -33,13 +33,13 @@ void populateTestMamaMsg(MamaMsg* msg) {
     dateTime.setToNow();
     mama_getPayloadBridge(&omnmBridge, "omnmmsg");
     msg->createForPayloadBridge(omnmBridge);
-    msg->addU32(nullptr, SEQ_NUM_FID, seqNum);
-    msg->addDateTime(nullptr, SEND_TIME_FID, dateTime);
-    msg->addString(nullptr, PADDING_FID, gPadding);
+    msg->addU32(NULL, SEQ_NUM_FID, seqNum);
+    msg->addDateTime(NULL, SEND_TIME_FID, dateTime);
+    msg->addString(NULL, PADDING_FID, gPadding);
 }
 
 void Benchmarker::runIterationTests(uint64_t repeats, bool readOnly, bool directAccess) {
-    auto msg = new MamaMsg();
+    MamaMsg* msg = new MamaMsg();
     populateTestMamaMsg(msg);
     uint32_t seqNum = 1;
 
@@ -66,22 +66,22 @@ void Benchmarker::runIterationTests(uint64_t repeats, bool readOnly, bool direct
     } cb;
 
     MamaDateTime dateTime;
-    msg->getDateTime(nullptr, SEND_TIME_FID, dateTime);
+    msg->getDateTime(NULL, SEND_TIME_FID, dateTime);
     for (uint64_t i = 1; i <= repeats; i++) {
         // Update some fields
         if (!readOnly) {
             dateTime.setToNow();
-            msg->updateU32(nullptr, SEQ_NUM_FID, i);
-            msg->updateDateTime(nullptr, SEND_TIME_FID, dateTime);
+            msg->updateU32(NULL, SEQ_NUM_FID, i);
+            msg->updateDateTime(NULL, SEND_TIME_FID, dateTime);
         }
 
         // Parse these fields to populate values
         if (!directAccess) {
-            msg->iterateFields(cb, nullptr, nullptr);
+            msg->iterateFields(cb, NULL, NULL);
         } else {
-            cb.mSeqNum = msg->getU32(nullptr, SEQ_NUM_FID);
-            msg->getDateTime(nullptr, SEND_TIME_FID, cb.mDateTime);
-            cb.mPadding = msg->getString(nullptr, PADDING_FID);
+            cb.mSeqNum = msg->getU32(NULL, SEQ_NUM_FID);
+            msg->getDateTime(NULL, SEND_TIME_FID, cb.mDateTime);
+            cb.mPadding = msg->getString(NULL, PADDING_FID);
         }
 
         // Assert equality
@@ -97,7 +97,7 @@ void Benchmarker::runIterationTests(uint64_t repeats, bool readOnly, bool direct
 
 void Benchmarker::runSerializationTests(uint64_t repeats) {
     MamaDateTime dateTime;
-    auto msg = new MamaMsg();
+    MamaMsg* msg = new MamaMsg();
     populateTestMamaMsg(msg);
     mamaMsg mmsg = msg->getUnderlyingMsg();
     msgPayload payload;
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
     Mama::loadBridge("qpid");
     Mama::loadPayloadBridge("omnmmsg");
     Mama::open();
-    auto benchmarker = new Benchmarker();
+    Benchmarker* benchmarker = new Benchmarker();
 
     memset(gPadding, 'A', sizeof(gPadding));
     gPadding[sizeof(gPadding)-1] = '\0';
