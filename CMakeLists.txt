@@ -74,7 +74,6 @@ if(OPENMAMA_SRC)
         ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/mamamsg/msgvectortests.cpp
     )
     target_link_libraries(UnitTestMamaMsgC mama gtest pthread wombatcommon)
-    install(TARGETS UnitTestMamaMsgC DESTINATION bin)
 
     add_executable(UnitTestMamaPayloadC
         ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/MainUnitTestC.cpp
@@ -87,7 +86,6 @@ if(OPENMAMA_SRC)
         ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/payload/payloadvectortests.cpp
     )
     target_link_libraries(UnitTestMamaPayloadC mama gtest pthread wombatcommon)
-    install(TARGETS UnitTestMamaPayloadC DESTINATION bin)
 else()
     message(WARNING "If you want full unit tests, you should provide -DOPENMAMA_SRC=")
 endif()

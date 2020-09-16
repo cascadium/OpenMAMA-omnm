@@ -61,7 +61,6 @@ elseif(UNIX)
        link_directories(${GTEST_ROOT}/lib)
        add_executable(unittests UnitTests.cpp)
        target_link_libraries(unittests gtest mamaomnmmsgimpl pthread)
-       install(TARGETS unittests DESTINATION bin)
    endif()
 endif()
 
