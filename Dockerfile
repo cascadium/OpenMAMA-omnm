@@ -21,7 +21,13 @@ ENV DISTRIB_PACKAGE_QUALIFIER $DISTRIB_PACKAGE_QUALIFIER
 WORKDIR /app/deps
 
 # Ubuntu dependencies
-RUN if grep -qi ubuntu /etc/*-release; then apt-get update && apt-get install -y cmake; fi
+RUN if grep -qi ubuntu /etc/*-release; then \
+        apt-get update \
+        && apt-get install -y build-essential zip unzip curl git libz-dev wget apt-transport-https ca-certificates; \
+        && curl -1sLf https://dl.cloudsmith.io/public/openmama/openmama/cfg/setup/bash.deb.sh | bash \
+        && apt-get update \
+        && apt-get install -y openmama; \
+    fi
 
 # Fedora dependencies
 RUN if grep -qi centos /etc/*-release; then \
