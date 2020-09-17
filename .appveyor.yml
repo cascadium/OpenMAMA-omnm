@@ -105,9 +105,9 @@ build_script:
 - sh: docker build -t omnmdocker . --build-arg IMAGE=$DOCKER_IMAGE --build-arg PACKAGE_TYPE=$PACKAGE_TYPE --build-arg VERSION=$VERSION --build-arg DISTRIB_PACKAGE_QUALIFIER=${DISTRO}${DISTRO_VERSION} 
 - sh: docker run -v $(pwd):/app/release --rm omnmdocker
   # Verify the packages are installable
-- sh: if [ "$PACKAGE_TYPE" = deb ]; then docker run --rm -v $(pwd):/package $DOCKER_IMAGE /bin/bash -c "apt update && apt install -y /package/*.deb"; fi
-- sh: if [ "$DISTRO" = fedora ]; then docker run --rm -v $(pwd):/package $DOCKER_IMAGE /bin/bash -c "dnf install -y /package/*.rpm"; fi
-- sh: if [ "$DISTRO" = el ]; then docker run --rm -v $(pwd):/package $DOCKER_IMAGE /bin/bash -c "yum install -y epel-release && yum install -y /package/*.rpm"; fi
+- sh: if [ "$PACKAGE_TYPE" = deb ]; then docker run --rm -v $(pwd):/package $DOCKER_IMAGE /bin/bash -c "curl -1sLf https://dl.cloudsmith.io/public/openmama/openmama/cfg/setup/bash.deb.sh | bash && apt-get update && apt-get install -y /package/*.deb"; fi
+- sh: if [ "$DISTRO" = fedora ]; then docker run --rm -v $(pwd):/package $DOCKER_IMAGE /bin/bash -c "curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama/cfg/setup/bash.rpm.sh' | bash && yum install -y openmama && dnf install -y /package/*.rpm"; fi
+- sh: if [ "$DISTRO" = el ]; then docker run --rm -v $(pwd):/package $DOCKER_IMAGE /bin/bash -c "yum install -y epel-release && curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama/cfg/setup/bash.rpm.sh' | bash && yum install -y openmama && yum install -y /package/*.rpm"; fi
 
 artifacts:
   - path: '*.deb'
