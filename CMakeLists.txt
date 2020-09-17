@@ -1,17 +1,19 @@
 cmake_minimum_required (VERSION 2.8.7)
 project (OpenMAMA-omnm)
 
-# enable warnings
-set(WARNFLAGS "${WARNFLAGS} -Wall")
-set(WARNFLAGS "${WARNFLAGS} -Wextra")
-set(WARNFLAGS "${WARNFLAGS} -Wcast-align")
-set(WARNFLAGS "${WARNFLAGS} -Wformat")
-set(WARNFLAGS "${WARNFLAGS} -Wformat-nonliteral")                # warn about non-literal format strings in printf etc.
-#set(WARNFLAGS "${WARNFLAGS} -Wexit-time-destructors")
-# disable warnings
-set(WARNFLAGS "${WARNFLAGS} -Wno-reorder")                       # order of initialization in ctor
-set(WARNFLAGS "${WARNFLAGS} -Wno-unused-parameter")              # given that API is defined in interface, this is kind of hard to enforce
-set(WARNFLAGS "${WARNFLAGS} -Wno-ignored-qualifiers")            # e.g., const on value return types
+if (NOT MSVC)
+  # enable warnings
+  set(WARNFLAGS "${WARNFLAGS} -Wall")
+  set(WARNFLAGS "${WARNFLAGS} -Wextra")
+  set(WARNFLAGS "${WARNFLAGS} -Wcast-align")
+  set(WARNFLAGS "${WARNFLAGS} -Wformat")
+  set(WARNFLAGS "${WARNFLAGS} -Wformat-nonliteral")                # warn about non-literal format strings in printf etc.
+  #set(WARNFLAGS "${WARNFLAGS} -Wexit-time-destructors")
+  # disable warnings
+  set(WARNFLAGS "${WARNFLAGS} -Wno-reorder")                       # order of initialization in ctor
+  set(WARNFLAGS "${WARNFLAGS} -Wno-unused-parameter")              # given that API is defined in interface, this is kind of hard to enforce
+  set(WARNFLAGS "${WARNFLAGS} -Wno-ignored-qualifiers")            # e.g., const on value return types
+endif()
 
 option(ENABLE_ASAN "Build with address sanitizer" OFF)
 if(ENABLE_ASAN)
