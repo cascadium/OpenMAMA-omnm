@@ -25,7 +25,7 @@ WORKDIR /app/deps
 RUN if grep -qi ubuntu /etc/*-release; then \
         apt-get update \
         && apt-get install -y build-essential zip unzip curl git libz-dev wget apt-transport-https ca-certificates cmake libssl-dev \
-        && curl -1sLf https://dl.cloudsmith.io/public/openmama/openmama/cfg/setup/bash.deb.sh | bash \
+        && curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama-experimental/cfg/setup/bash.deb.sh' | bash \
         && apt-get update \
         && apt-get install -y openmama; \
     fi
@@ -34,14 +34,14 @@ RUN if grep -qi ubuntu /etc/*-release; then \
 RUN if grep -qi centos /etc/*-release; then \
         yum install -y epel-release \
         && yum install -y cmake make gcc-c++ git redhat-rpm-config rpm-build zlib-devel openssl-devel \
-        && curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama/cfg/setup/bash.rpm.sh' | bash \
+        && curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama-experimental/cfg/setup/bash.rpm.sh' | bash \
         && yum install -y openmama; \
     fi
 
 # Fedora dependencies
 RUN if grep -qi fedora /etc/*-release; then \
         yum install -y libnsl2-devel libffi-devel ruby-devel rubygems redhat-rpm-config rpm-build cmake make gcc-c++ git redhat-rpm-config rpm-build zlib-devel openssl-devel \
-        && curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama/cfg/setup/bash.rpm.sh' | bash \
+        && curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama-experimental/cfg/setup/bash.rpm.sh' | bash \
         && yum install -y openmama; \
     fi
 
