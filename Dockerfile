@@ -31,7 +31,7 @@ RUN if grep -qi ubuntu /etc/*-release; then \
     fi
 
 # CentOS dependencies
-RUN if grep -qi centos /etc/*-release; then \
+RUN if grep -qP "^NAME=.*CentOS*" /etc/*-release; then \
         yum install -y epel-release \
         && yum install -y cmake make gcc-c++ git redhat-rpm-config rpm-build zlib-devel openssl-devel \
         && curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama-experimental/cfg/setup/bash.rpm.sh' | bash \
