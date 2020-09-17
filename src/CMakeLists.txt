@@ -65,8 +65,10 @@ elseif(UNIX)
 endif()
 
 # Benchmarking utility
-add_executable(OmnmBenchmark
-        Benchmarker.cpp
-        Benchmarker.h
-)
-target_link_libraries(OmnmBenchmark mamaomnmmsgimpl wombatcommon mama mamacpp pthread)
+if (NOT MSVC)
+    add_executable(OmnmBenchmark
+            Benchmarker.cpp
+            Benchmarker.h
+    )
+    target_link_libraries(OmnmBenchmark mamaomnmmsgimpl wombatcommon mama mamacpp pthread)
+endif ()
