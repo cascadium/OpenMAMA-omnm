@@ -95,9 +95,6 @@ build_script:
     git clone https://github.com/OpenMAMA/OpenMAMA.git
     cmake -G "%GENERATOR%" -DCMAKE_TOOLCHAIN_FILE=c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX="%OPENMAMA_INSTALL_DIR%" -DGTEST_ROOT=C:/tools/vcpkg/installed/%PLATFORM%-windows/ -DMAMA_ROOT=C:/tools/vcpkg/installed/%PLATFORM%-windows/ ..
     cmake --build . --config RelWithDebInfo --target install
-    .\src\unittests.exe
-    .\UnitTestMamaMsgC.exe -m qpid -p omnmmsg -i O
-    .\UnitTestMamaPayloadC.exe -m qpid -p omnmmsg -i O --gtest_filter=-PayloadSubMsgTests.UpdateSubMsg
     cd ..
     7z a openmama-omnm-%VERSION%.win.%PLATFORM%.zip "%OPENMAMA_INSTALL_DIR%"
 
