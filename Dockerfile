@@ -40,7 +40,8 @@ RUN if grep -qi centos /etc/*-release; then \
 
 # Fedora dependencies
 RUN if grep -qP "^NAME=.*Fedora.*" /etc/*-release; then \
-        yum install -y libffi-devel ruby-devel rubygems redhat-rpm-config rpm-build cmake make gcc-c++ git redhat-rpm-config rpm-build zlib-devel openssl-devel \
+        yum install -y libffi-devel ruby-devel rubygems redhat-rpm-config rpm-build cmake make gcc-c++ git redhat-rpm-config rpm-build zlib-devel openssl-devel yum-utils pygpgme dnf-plugin-config-manager \
+        && rpm --import https://dl.cloudsmith.io/public/openmama/openmama-experimental/cfg/gpg/gpg.422DD3D44D7B047A.key \
         && curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama-experimental/cfg/setup/bash.rpm.sh' | bash \
         && yum install -y openmama; \
     fi
