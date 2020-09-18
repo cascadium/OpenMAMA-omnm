@@ -34,12 +34,7 @@ if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
     # Windows Targets
-    install(TARGETS mamaomnmmsgimpl
-            CONFIGURATIONS Release
-            DESTINATION bin/dynamic)
-    install(TARGETS mamaomnmmsgimpl
-            CONFIGURATIONS Debug
-            DESTINATION bin/dynamic-debug)
+    install(TARGETS mamaomnmmsgimpl DESTINATION bin)
 
 elseif(UNIX)
     add_library(mamaomnmmsgimpl-static
