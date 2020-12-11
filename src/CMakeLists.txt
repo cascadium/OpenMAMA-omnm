@@ -17,6 +17,7 @@ add_library(mamaomnmmsgimpl
                    Iterator.cpp
                    Iterator.h
                    omnmmsgpayloadfunctions.h
+                   omnmmsgpayloadimpl.h
                    Payload.cpp
                    Payload.h)
 
@@ -35,7 +36,6 @@ if(WIN32)
 
     # Windows Targets
     install(TARGETS mamaomnmmsgimpl DESTINATION bin)
-
 elseif(UNIX)
     add_library(mamaomnmmsgimpl-static
                 STATIC Field.cpp
@@ -58,6 +58,8 @@ elseif(UNIX)
        target_link_libraries(unittests gtest mamaomnmmsgimpl pthread)
    endif()
 endif()
+
+install(FILES omnmmsgpayloadfunctions.h omnmmsgpayloadimpl.h DESTINATION include/mama/integration/bridge)
 
 # Benchmarking utility
 if (NOT MSVC)

@@ -38,6 +38,7 @@
 #include <mama/price.h>
 
 #include "omnmmsgpayloadfunctions.h"
+#include "omnmmsgpayloadimpl.h"
 #include <wombat/strutils.h>
 #include <wombat/memnode.h>
 #include <stddef.h>
@@ -161,12 +162,13 @@ do                                                                             \
   =                  Private implementation prototypes                    =
   =========================================================================*/
 
-OmnmPayloadImpl::OmnmPayloadImpl() : mPayloadBuffer(NULL),
+OmnmPayloadImpl::OmnmPayloadImpl() : mPayloadBuffer(nullptr),
                                      mPayloadBufferSize(0),
                                      mPayloadBufferTail(0),
                                      mField(), /* Inline struct member */
                                      mHeader(),
-                                     mParent(NULL)
+                                     mParent(nullptr),
+                                     mExtenderClosure(nullptr)
 {
     mPayloadBufferSize           = DEFAULT_PAYLOAD_SIZE;
     mPayloadBuffer               = (uint8_t*) calloc (mPayloadBufferSize, 1);
@@ -2462,3 +2464,18 @@ omnmmsgPayload_getField (const msgPayload    msg,
 }
 
 
+mama_status
+omnmmsgPayloadImpl_setExtenderClosure (msgPayload msg, void* closure)
+{
+    if (nullptr == msg || nullptr == closure) return MAMA_STATUS_NULL_ARG;
+    ((OmnmPayloadImpl*) msg)->mExtenderClosure = closure;
+    return MAMA_STATUS_OK;
+}
+
+mama_status
+omnmmsgPayloadImpl_getExtenderClosure (msgPayload msg, const void** closure)
+{
+    if (nullptr == msg || nullptr == closure) return MAMA_STATUS_NULL_ARG;
+    *closure = ((OmnmPayloadImpl*) msg)->mExtenderClosure;
+    return MAMA_STATUS_OK;
+}
