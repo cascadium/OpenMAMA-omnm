@@ -39,6 +39,14 @@ MAMAExpBridgeDLL
 mama_status
 omnmmsgPayloadImpl_getExtenderClosure (msgPayload bridge, const void** closure);
 
+MAMAExpBridgeDLL
+mama_status
+omnmmsgPayloadImpl_updateVectorMsgPayload (msgPayload          msg,
+                                           const char*         name,
+                                           mama_fid_t          fid,
+                                           const msgPayload    value[],
+                                           mama_size_t         size);
+
 #if defined(__cplusplus)
 }
 #endif
