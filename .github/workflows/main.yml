@@ -67,9 +67,11 @@ jobs:
     - name: Standardise cmake
       run: cd /usr && wget -c https://github.com/Kitware/CMake/releases/download/v3.19.4/cmake-3.19.4-Linux-x86_64.tar.gz -O - | tar -xz  --strip-components 1
     - run: curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama-experimental/cfg/setup/bash.${{ matrix.package_type }}.sh' | bash
-    - run: ${{ matrix.package_manager }} install -y openmama
+    - run: ${{ matrix.package_manager }} install -y openmama git
     - name: Build
       run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=/opt/openmama-omnm -DMAMA_ROOT=/opt/openmama .. && make -j && make install
+      env:
+        LD_LIBRARY_PATH: /opt/openmama-omnm/lib:/opt/openmama/lib
     - name: Test
       run: cd bld && ctest -E FieldMsgTestsC.getMsgValid
       env:
