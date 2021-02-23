@@ -4,7 +4,6 @@ FROM $IMAGE
 
 ARG IMAGE
 ARG PACKAGE_TYPE=rpm
-ARG VERSION=0.0.1
 ARG DISTRIB_PACKAGE_QUALIFIER=el7
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -15,7 +14,6 @@ ENV INSTALL_DIR /opt/openmama-omnm
 ENV LD_LIBRARY_PATH=/opt/openmama/lib:$INSTALL_DIR/lib
 ENV WOMBAT_PATH=/opt/openmama/config
 ENV PACKAGE_TYPE=$PACKAGE_TYPE
-ENV VERSION=$VERSION
 ENV RELEASE_DIR /app/release
 ENV DISTRIB_PACKAGE_QUALIFIER $DISTRIB_PACKAGE_QUALIFIER
 
@@ -66,11 +64,11 @@ CMD fpm -s dir \
         -t $PACKAGE_TYPE \
         -m "contact@cascadium.io" \
         --name openmama-omnm \
-        --version `cat VERSION` \
+        --version $(cat VERSION | xargs) \
         --iteration 1 \
         --url "http://cascadium.io/" \
         --license MIT \
         -d openmama \
-        -p openmama-omnm-$VERSION-1.$DISTRIB_PACKAGE_QUALIFIER.x86_64.$PACKAGE_TYPE \
+        -p openmama-omnm-$(cat VERSION | xargs)-1.$DISTRIB_PACKAGE_QUALIFIER.x86_64.$PACKAGE_TYPE \
         --description "OpenMAMA OMNM payload bridge" \
         $INSTALL_DIR/=/opt/openmama/

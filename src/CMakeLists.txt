@@ -1,6 +1,8 @@
 include_directories(.)
 include_directories(${MAMA_ROOT}/include)
 
+enable_testing()
+
 # Default to installing directly to MAMA directory
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set (CMAKE_INSTALL_PREFIX "${MAMA_ROOT}" CACHE PATH "default install path" FORCE)
@@ -56,6 +58,12 @@ elseif(UNIX)
         link_directories(${GTEST_ROOT}/lib)
         add_executable(unittests UnitTests.cpp)
         target_link_libraries(unittests gtest mamaomnmmsgimpl pthread)
+        gtest_discover_tests(
+            unittests
+            EXTRA_ARGS -m qpid -p omnmmsg -i O
+            PROPERTIES ENVIRONMENT
+                "WOMBAT_PATH=${openmama_SOURCE_DIR}/mama/c_cpp/src/examples:${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c"
+        )
     endif()
 endif()
 

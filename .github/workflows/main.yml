@@ -12,64 +12,85 @@ jobs:
     strategy:
       matrix:
         include:
-          # - image: openmama/openmama-dev:centos-6
-          #   package_type: rpm
-          #   distro: el
-          #   distro_version: 6
+          - image: openmama/openmama-dev:centos-6
+            package_type: rpm
+            package_manager: yum
+            distro: el
+            distro_version: 6
           - image: openmama/openmama-dev:centos-7
             package_type: rpm
             package_manager: yum
             distro: el
             distro_version: 7
-          # - image: openmama/openmama-dev:centos-8
-          #   package_type: rpm
-          #   distro: el
-          #   distro_version: 8
-          # - image: openmama/openmama-dev:fedora-30
-          #   package_type: rpm
-          #   distro: fedora
-          #   distro_version: 30
-          # - image: openmama/openmama-dev:fedora-31
-          #   package_type: rpm
-          #   distro: fedora
-          #   distro_version: 31
-          # - image: openmama/openmama-dev:fedora-32
-          #   package_type: rpm
-          #   distro: fedora
-          #   distro_version: 32
-          # - image: openmama/openmama-dev:ubuntu-16.04
-          #   package_type: deb
-          #   distro: ubuntu
-          #   distro_version: xenial
-          # - image: openmama/openmama-dev:ubuntu-18.04
-          #   package_type: deb
-          #   distro: ubuntu
-          #   distro_version: bionic
-          # - image: openmama/openmama-dev:ubuntu-20.04
-          #   package_type: deb
-          #   distro: ubuntu
-          #   distro_version: focal
+          - image: openmama/openmama-dev:centos-8
+            package_type: rpm
+            package_manager: yum
+            distro: el
+            distro_version: 8
+          - image: openmama/openmama-dev:fedora-30
+            package_type: rpm
+            package_manager: dnf
+            distro: fedora
+            distro_version: 30
+          - image: openmama/openmama-dev:fedora-31
+            package_type: rpm
+            package_manager: dnf
+            distro: fedora
+            distro_version: 31
+          - image: openmama/openmama-dev:fedora-32
+            package_type: rpm
+            package_manager: dnf
+            distro: fedora
+            distro_version: 32
+          - image: openmama/openmama-dev:ubuntu-16.04
+            package_type: deb
+            package_manager: apt
+            distro: ubuntu
+            distro_version: xenial
+          - image: openmama/openmama-dev:ubuntu-18.04
+            package_type: deb
+            package_manager: apt
+            distro: ubuntu
+            distro_version: bionic
+          - image: openmama/openmama-dev:ubuntu-20.04
+            package_type: deb
+            package_manager: apt
+            distro: ubuntu
+            distro_version: focal
     steps:
     - name: Check out the code
       uses: actions/checkout@v1
-    - name: Override artifact type to dev
-      if: endswith(github.ref, '/develop')
-      run: |
-        echo "ARTIFACT_TYPE=dev" >> $GITHUB_ENV
     - name: Override artifact type to release
-      if: endswith(github.ref, '/master')
+      if: endsWith(github.ref, '/master')
       run: |
         echo "ARTIFACT_TYPE=release" >> $GITHUB_ENV
-    - name: Override artifact type to rc
-      if: startsWith(github.ref, 'refs/heads/release/')
-      run: |
-        echo "ARTIFACT_TYPE=rc" >> $GITHUB_ENV
     - run: curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama-experimental/cfg/setup/bash.${{ matrix.package_type }}.sh' | bash
     - run: ${{ matrix.package_manager }} install -y openmama
-    - run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=/opt/openmama-omnm -DMAMA_ROOT=/opt/openmama .. && make -j install
+    - name: Build
+      run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=/opt/openmama-omnm -DMAMA_ROOT=/opt/openmama .. && make -j && make install
+    - name: Test
+      run: cd bld && ctest -E FieldMsgTestsC.getMsgValid
+      env:
+        LD_LIBRARY_PATH: /opt/openmama-omnm/lib:/opt/openmama/lib
+    - name: Build the package
+      run: |
+        fpm -s dir \
+          -t ${{ matrix.package_type }} \
+          -m "contact@cascadium.io" \
+          --name openmama-omnm \
+          --version $(cat VERSION | xargs) \
+          --url "http://cascadium.io/" \
+          --license MIT \
+          -d openmama \
+          -p openmama-omnm-$(cat VERSION | xargs)-1.$DISTRIB_PACKAGE_QUALIFIER.x86_64.${{ matrix.package_type }} \
+          --description "OpenMAMA OMNM payload bridge" \
+          /opt/openmama-omnm/=/opt/openmama/
     - name: Find the package
       run: 'echo PKG=`find . -name "*.${{ matrix.package_type }}"` >> $GITHUB_ENV'
+    - name: List contents of package
+      run: dpkg -c ${{ env.PKG }}
     - name: Archive package as an artifact
+      if: ${{ env.ACT != "true" }}
       uses: actions/upload-artifact@v1
       with:
         name: package
@@ -84,56 +105,56 @@ jobs:
         command: 'push'
         format: '${{ matrix.package_type }}'
         owner: 'openmama'
-        repo: 'openmama-experimental'
+        repo: 'openmama-thirdparty'
         distro: '${{ matrix.distro }}'
         release: '${{ matrix.distro_version }}'
         republish: 'true'
         file: '${{ env.PKG }}'
 
-  windows-build:
-    name: Build and Test for Windows
-    runs-on: ${{ matrix.os }}
-    continue-on-error: true
-    strategy:
-      matrix:
-        include:
-          - os: windows-2016
-            platform: x86
-            generator: Visual Studio 15 2017
-            vcver: msvc2017
-          - os: windows-2016
-            platform: x64
-            generator: Visual Studio 15 2017 Win64
-            vcver: msvc2017
-          - os: windows-2019
-            platform: x86
-            generator: Visual Studio 16 2019
-            args: -A Win32
-            vcver: msvc2019
-          - os: windows-2019
-            platform: x64
-            generator: Visual Studio 16 2019
-            args: -A x64
-            vcver: msvc2019
-    steps:
-    - uses: actions/checkout@v1
-    - name: Run Windows Build
-      run: ./devops/build/ci-run.bat
-      env:
-        PLATFORM: ${{ matrix.platform }}
-        GENERATOR: ${{ matrix.generator }}
-        EXTRA_ARGS: ${{ matrix.args }}
-        VCVER: ${{ matrix.vcver }}
-    - uses: actions/upload-artifact@v2
-      with:
-        name: package
-        path: '*.zip'
+  # windows-build:
+  #   name: Build and Test for Windows
+  #   runs-on: ${{ matrix.os }}
+  #   continue-on-error: true
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - os: windows-2016
+  #           platform: x86
+  #           generator: Visual Studio 15 2017
+  #           vcver: msvc2017
+  #         - os: windows-2016
+  #           platform: x64
+  #           generator: Visual Studio 15 2017 Win64
+  #           vcver: msvc2017
+  #         - os: windows-2019
+  #           platform: x86
+  #           generator: Visual Studio 16 2019
+  #           args: -A Win32
+  #           vcver: msvc2019
+  #         - os: windows-2019
+  #           platform: x64
+  #           generator: Visual Studio 16 2019
+  #           args: -A x64
+  #           vcver: msvc2019
+  #   steps:
+  #   - uses: actions/checkout@v1
+  #   - name: Run Windows Build
+  #     run: ./devops/build/ci-run.bat
+  #     env:
+  #       PLATFORM: ${{ matrix.platform }}
+  #       GENERATOR: ${{ matrix.generator }}
+  #       EXTRA_ARGS: ${{ matrix.args }}
+  #       VCVER: ${{ matrix.vcver }}
+  #   - uses: actions/upload-artifact@v2
+  #     with:
+  #       name: package
+  #       path: '*.zip'
 
-  macos-build:
-    name: Build and Test for MacOS
-    runs-on: macos-latest
-    continue-on-error: true
-    steps:
-    - uses: actions/checkout@v1
-    - name: Run MacOS Build
-      run: ./devops/build/ci-run.macos.sh
+  # macos-build:
+  #   name: Build and Test for MacOS
+  #   runs-on: macos-latest
+  #   continue-on-error: true
+  #   steps:
+  #   - uses: actions/checkout@v1
+  #   - name: Run MacOS Build
+  #     run: ./devops/build/ci-run.macos.sh
