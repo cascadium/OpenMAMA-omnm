@@ -90,7 +90,7 @@ jobs:
     - name: List contents of package
       run: dpkg -c ${{ env.PKG }}
     - name: Archive package as an artifact
-      if: ${{ env.ACT != "true" }}
+      if: ${{ !env.ACT }}
       uses: actions/upload-artifact@v1
       with:
         name: package
