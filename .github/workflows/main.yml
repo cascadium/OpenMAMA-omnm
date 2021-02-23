@@ -12,11 +12,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - image: openmama/openmama-dev:centos-6
-            package_type: rpm
-            package_manager: yum
-            distro: el
-            distro_version: 6
           - image: openmama/openmama-dev:centos-7
             package_type: rpm
             package_manager: yum
@@ -27,11 +22,6 @@ jobs:
             package_manager: yum
             distro: el
             distro_version: 8
-          - image: openmama/openmama-dev:fedora-30
-            package_type: rpm
-            package_manager: dnf
-            distro: fedora
-            distro_version: 30
           - image: openmama/openmama-dev:fedora-31
             package_type: rpm
             package_manager: dnf
