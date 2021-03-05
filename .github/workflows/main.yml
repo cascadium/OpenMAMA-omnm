@@ -133,8 +133,10 @@ jobs:
     steps:
     - name: Check out the code
       uses: actions/checkout@v1
-    - name: Installing OpenMAMA and other required packages
+    - name: Installing OpenMAMA
       run: vcpkg install openmama:${{ matrix.platform }}-windows
+    - name: Installing other prerequisites
+      run: choco install --no-progress -y cmake
     - name: Build
       run: mkdir bld && cd bld && cmake  -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=./openmama-omnm -DGTEST_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ -DMAMA_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ .. && make -j && make install
       env:
