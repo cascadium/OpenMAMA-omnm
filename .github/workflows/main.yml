@@ -154,5 +154,7 @@ jobs:
     continue-on-error: true
     steps:
     - uses: actions/checkout@v1
-    - name: Run MacOS Build
-      run: ./devops/build/ci-run.macos.sh
+    - name: Installing OpenMAMA
+      run: brew install openmama
+    - name: Build
+      run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=/opt/openmama-omnm -DMAMA_ROOT=/opt/openmama .. && make -j && make install
