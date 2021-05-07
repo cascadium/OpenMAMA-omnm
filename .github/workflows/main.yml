@@ -155,12 +155,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Installing OpenMAMA
-      run: brew install openmama 7z
+      run: brew install openmama
     - name: Build
+      # We don't care about OSX packaging but we do care if it fails to build
       run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=/opt/openmama-omnm -DMAMA_ROOT=/usr/local/Cellar/openmama/* .. && make -j && make install
-    - name: Package MacOS build
-      run: 7z --help
-    - uses: actions/upload-artifact@v2
-      with:
-        name: package
-        path: '*.zip'
