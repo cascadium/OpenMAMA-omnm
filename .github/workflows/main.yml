@@ -139,10 +139,14 @@ jobs:
       run: choco install --no-progress -y cmake
     - name: Adding potential install prefix to PATH
       run: echo "C:\vcpkg\installed\${{ matrix.platform }}-windows\bin" >> $GITHUB_PATH
-    - name: Build
-      run: mkdir bld && cd bld && cmake  -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=./openmama-omnm -DGTEST_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ -DMAMA_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ .. && make -j && make install
+    - name: Configuring build
+      run: mkdir bld && cd bld && cmake  -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=../openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }} -DGTEST_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ -DMAMA_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ ..
+    - name: Building
+      run: cd bld && cmake --build . --config RelWithDebInfo --target install
+    - name: Testing
+      run: cd bld && ctest . -C RelWithDebInfo
     - name: Package windows build
-      run: 7z --help
+      run: zip -r openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }}.zip openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }}
     - uses: actions/upload-artifact@v2
       with:
         name: package
