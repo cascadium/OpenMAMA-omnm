@@ -158,4 +158,4 @@ jobs:
       run: brew install openmama
     - name: Build
       # We don't care about OSX packaging but we do care if it fails to build
-      run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=/opt/openmama-omnm -DMAMA_ROOT=/usr/local/Cellar/openmama/* .. && make -j && make install
+      run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=/opt/openmama-omnm -DMAMA_ROOT=$(echo /usr/local/Cellar/openmama/*) .. && make -j && make install
