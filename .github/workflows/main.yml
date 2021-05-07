@@ -156,5 +156,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: Installing OpenMAMA
       run: brew install openmama
+    - name: Finding OpenMAMA...
+      run: find / -name mama.h 2>/dev/null
     - name: Build
-      run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=/opt/openmama-omnm -DMAMA_ROOT=/opt/openmama .. && make -j && make install
+      run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=/opt/openmama-omnm -DMAMA_ROOT=/usr/local .. && make -j && make install
