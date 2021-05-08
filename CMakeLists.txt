@@ -83,6 +83,7 @@ set(BUILD_GTEST ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 include_directories(${MAMA_ROOT}/include)
+include_directories(${MAMA_ROOT}/include/wombat)
 include_directories(${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c)
 include_directories(${openmama_SOURCE_DIR}/mama/c_cpp/src/c)
 link_directories(${MAMA_ROOT}/lib)

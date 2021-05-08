@@ -163,3 +163,5 @@ jobs:
     - name: Build
       # We don't care about OSX packaging but we do care if it fails to build
       run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DMAMA_ROOT=$(echo /usr/local/Cellar/openmama/*) .. && make -j && make install
+    - name: Test
+      run: cd bld && env DYLD_LIBRARY_PATH=`pwd`/install/lib ctest .
