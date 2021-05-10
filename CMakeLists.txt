@@ -8,7 +8,12 @@ enable_testing()
 set (CMAKE_CXX_STANDARD 11)
 set (MAMA_ROOT "/opt/openmama" CACHE PATH "Path to OpenMAMA installation")
 
-if (NOT MSVC)
+add_definitions(-DOPENMAMA_INTEGRATION)
+
+if (MSVC)
+  set (OPENMAMA_LIBS libmamacmd libwombatcommonmd)
+else (NOT MSVC)
+  set (OPENMAMA_LIBS mama pthread wombatcommon)
   # enable warnings
   set(WARNFLAGS "${WARNFLAGS} -Wall")
   set(WARNFLAGS "${WARNFLAGS} -Wextra")
@@ -101,7 +106,7 @@ add_executable(UnitTestMamaMsgC
     ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgstatustests.cpp
     ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgvectortests.cpp
 )
-target_link_libraries(UnitTestMamaMsgC mama gtest pthread wombatcommon)
+target_link_libraries(UnitTestMamaMsgC ${OPENMAMA_LIBS} gtest)
 gtest_discover_tests(
     UnitTestMamaMsgC
     EXTRA_ARGS -m qpid -p omnmmsg -i Q
@@ -119,7 +124,7 @@ add_executable(UnitTestMamaPayloadC
     ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadgeneraltests.cpp
     ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadvectortests.cpp
 )
-target_link_libraries(UnitTestMamaPayloadC mama gtest pthread wombatcommon)
+target_link_libraries(UnitTestMamaPayloadC ${OPENMAMA_LIBS} gtest)
 gtest_discover_tests(
     UnitTestMamaPayloadC
     EXTRA_ARGS -m qpid -p omnmmsg -i O

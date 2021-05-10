@@ -1,5 +1,6 @@
 include_directories(.)
 include_directories(${MAMA_ROOT}/include)
+include_directories(${MAMA_ROOT}/include/wombat)
 
 enable_testing()
 
