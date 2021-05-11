@@ -138,7 +138,7 @@ jobs:
     - name: Adding potential install prefix to PATH
       run: echo "${{ github.workspace }}\openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }}\bin" >> $GITHUB_PATH
     - name: Printing the path
-      run: echo %PATH%
+      run: echo $env:PATH
     - name: Installing OpenMAMA
       run: vcpkg install openmama:${{ matrix.platform }}-windows
     - name: Installing other prerequisites
