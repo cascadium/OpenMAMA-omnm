@@ -133,14 +133,16 @@ jobs:
     steps:
     - name: Check out the code
       uses: actions/checkout@v1
-    - name: Installing OpenMAMA
-      run: vcpkg install openmama:${{ matrix.platform }}-windows
-    - name: Installing other prerequisites
-      run: choco install --no-progress -y cmake
     - name: Adding vcpkg install prefix to PATH
       run: echo "C:\vcpkg\installed\${{ matrix.platform }}-windows\bin" >> $GITHUB_PATH
     - name: Adding potential install prefix to PATH
       run: echo "${{ github.workspace }}\openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }}\bin" >> $GITHUB_PATH
+    - name: Printing the path
+      run: echo %PATH%
+    - name: Installing OpenMAMA
+      run: vcpkg install openmama:${{ matrix.platform }}-windows
+    - name: Installing other prerequisites
+      run: choco install --no-progress -y cmake
     - name: Configuring build
       run: mkdir bld && cd bld && cmake -G "${{ matrix.generator }}" ${{ matrix.args }} -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }} -DGTEST_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ -DMAMA_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ ..
     - name: Building
