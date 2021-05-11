@@ -34,6 +34,7 @@ if(WIN32)
                           libwombatcommon${MAMA_LIB_SUFFIX}
                           libmamac${MAMA_LIB_SUFFIX})
     set_target_properties(mamaomnmmsgimpl PROPERTIES PREFIX "lib")
+    set_target_properties(mamaomnmmsgimpl PROPERTIES OUTPUT_NAME "mamaomnmmsgimpl${MAMA_LIB_SUFFIX}")
 
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
