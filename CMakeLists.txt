@@ -72,6 +72,7 @@ include(FetchContent)
 FetchContent_Declare(
   openmama
   GIT_REPOSITORY https://github.com/finos/OpenMAMA.git
+  GIT_TAG        next
 )
 FetchContent_Populate(openmama)
 
