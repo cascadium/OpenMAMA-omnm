@@ -137,10 +137,12 @@ jobs:
       run: vcpkg install openmama:${{ matrix.platform }}-windows
     - name: Installing other prerequisites
       run: choco install --no-progress -y cmake
-    - name: Adding potential install prefix to PATH
+    - name: Adding vcpkg install prefix to PATH
       run: echo "C:\vcpkg\installed\${{ matrix.platform }}-windows\bin" >> $GITHUB_PATH
+    - name: Adding potential install prefix to PATH
+      run: echo "${{ env.GITHUB_WORKSPACE }}\openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }}\bin" >> $GITHUB_PATH
     - name: Configuring build
-      run: mkdir bld && cd bld && cmake -G "${{ matrix.generator }}" ${{ matrix.args }} -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=../openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }} -DGTEST_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ -DMAMA_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ ..
+      run: echo %PATH% && mkdir bld && cd bld && cmake -G "${{ matrix.generator }}" ${{ matrix.args }} -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=../openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }} -DGTEST_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ -DMAMA_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ ..
     - name: Building
       run: cd bld && cmake --build . --config RelWithDebInfo --target install
     - name: Testing
