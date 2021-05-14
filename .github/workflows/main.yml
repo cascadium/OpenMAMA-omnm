@@ -134,9 +134,9 @@ jobs:
     - name: Check out the code
       uses: actions/checkout@v1
     - name: Adding vcpkg install prefix to PATH
-      run: echo "C:\vcpkg\installed\${{ matrix.platform }}-windows\bin" >> $GITHUB_PATH
+      run: echo "C:\vcpkg\installed\${{ matrix.platform }}-windows\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
     - name: Adding potential install prefix to PATH
-      run: echo "${{ github.workspace }}\openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }}\bin" >> $GITHUB_PATH
+      run: echo "${{ github.workspace }}\openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }}\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
     - name: Printing the path
       run: echo $env:PATH
     - name: Installing OpenMAMA
