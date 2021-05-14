@@ -65,7 +65,7 @@ jobs:
   #     env:
   #       LD_LIBRARY_PATH: /opt/openmama-omnm/lib:/opt/openmama/lib
   #   - name: Test
-  #     run: cd bld && ctest -E FieldMsgTestsC.getMsgValid
+  #     run: cd bld && ctest .
   #     env:
   #       LD_LIBRARY_PATH: /opt/openmama-omnm/lib:/opt/openmama/lib
   #   - name: Package
@@ -150,22 +150,22 @@ jobs:
     - name: Testing
       run: cd bld && ctest . -C RelWithDebInfo
     - name: Package windows build
-      run: zip -r openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }}.zip openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }}
+      run: Compress-Archive -Path openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }} -DestinationPath openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }}.zip
     - uses: actions/upload-artifact@v2
       with:
         name: package
         path: '*.zip'
 
-  macos-build:
-    name: Build and Test for MacOS
-    runs-on: macos-latest
-    continue-on-error: true
-    steps:
-    - uses: actions/checkout@v1
-    - name: Installing OpenMAMA
-      run: brew install openmama
-    - name: Build
-      # We don't care about OSX packaging but we do care if it fails to build
-      run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DMAMA_ROOT=$(echo /usr/local/Cellar/openmama/*) .. && make -j && make install
-    - name: Test
-      run: cd bld && env DYLD_LIBRARY_PATH=`pwd`/install/lib ctest .
+  # macos-build:
+  #   name: Build and Test for MacOS
+  #   runs-on: macos-latest
+  #   continue-on-error: true
+  #   steps:
+  #   - uses: actions/checkout@v1
+  #   - name: Installing OpenMAMA
+  #     run: brew install openmama
+  #   - name: Build
+  #     # We don't care about OSX packaging but we do care if it fails to build
+  #     run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DMAMA_ROOT=$(echo /usr/local/Cellar/openmama/*) .. && make -j && make install
+  #   - name: Test
+  #     run: cd bld && env DYLD_LIBRARY_PATH=`pwd`/install/lib ctest .
