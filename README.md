@@ -46,9 +46,11 @@ know.*
 
 ### Supported Platforms
 
-* RHEL / CentOS 5
-* RHEL / CentOS 6
-* Windows (coming soon)
+* RHEL 7 and 8
+* Fedora
+* Ubuntu
+* OSX
+* Windows
 
 ### Dependencies
 
