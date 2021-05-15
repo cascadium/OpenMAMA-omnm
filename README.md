@@ -14,7 +14,7 @@ In future if people are using this, I may expand the functionality out some
 more, but in the meantime, it focuses entirely on scalar data types.
 
 *NB: This project is MIT Licensed and in no way affiliated with nor supported
-by the OpenMAMA project or SR Labs - if you find any issues, please report to
+by the OpenMAMA project - if you find any issues, please report to
 this project via github.*
 
 ## Functionality
