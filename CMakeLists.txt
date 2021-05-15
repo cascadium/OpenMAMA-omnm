@@ -1,17 +1,31 @@
-cmake_minimum_required (VERSION 2.8.7)
+cmake_minimum_required (VERSION 3.11)
+
 project (OpenMAMA-omnm)
 
-# enable warnings
-set(WARNFLAGS "${WARNFLAGS} -Wall")
-set(WARNFLAGS "${WARNFLAGS} -Wextra")
-set(WARNFLAGS "${WARNFLAGS} -Wcast-align")
-set(WARNFLAGS "${WARNFLAGS} -Wformat")
-set(WARNFLAGS "${WARNFLAGS} -Wformat-nonliteral")                # warn about non-literal format strings in printf etc.
-#set(WARNFLAGS "${WARNFLAGS} -Wexit-time-destructors")
-# disable warnings
-set(WARNFLAGS "${WARNFLAGS} -Wno-reorder")                       # order of initialization in ctor
-set(WARNFLAGS "${WARNFLAGS} -Wno-unused-parameter")              # given that API is defined in interface, this is kind of hard to enforce
-set(WARNFLAGS "${WARNFLAGS} -Wno-ignored-qualifiers")            # e.g., const on value return types
+include(GoogleTest)
+enable_testing()
+
+set (CMAKE_CXX_STANDARD 11)
+set (MAMA_ROOT "/opt/openmama" CACHE PATH "Path to OpenMAMA installation")
+
+add_definitions(-DOPENMAMA_INTEGRATION)
+
+if (MSVC)
+  set (OPENMAMA_LIBS libmamacmd libwombatcommonmd)
+else (NOT MSVC)
+  set (OPENMAMA_LIBS mama pthread wombatcommon)
+  # enable warnings
+  set(WARNFLAGS "${WARNFLAGS} -Wall")
+  set(WARNFLAGS "${WARNFLAGS} -Wextra")
+  set(WARNFLAGS "${WARNFLAGS} -Wcast-align")
+  set(WARNFLAGS "${WARNFLAGS} -Wformat")
+  set(WARNFLAGS "${WARNFLAGS} -Wformat-nonliteral")                # warn about non-literal format strings in printf etc.
+  #set(WARNFLAGS "${WARNFLAGS} -Wexit-time-destructors")
+  # disable warnings
+  set(WARNFLAGS "${WARNFLAGS} -Wno-reorder")                       # order of initialization in ctor
+  set(WARNFLAGS "${WARNFLAGS} -Wno-unused-parameter")              # given that API is defined in interface, this is kind of hard to enforce
+  set(WARNFLAGS "${WARNFLAGS} -Wno-ignored-qualifiers")            # e.g., const on value return types
+endif()
 
 option(ENABLE_ASAN "Build with address sanitizer" OFF)
 if(ENABLE_ASAN)
@@ -53,39 +67,68 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${WARNFLAGS}")
 
 add_subdirectory(src)
 
-# Only build the extra unit tests if OPENMAMA_SRC is provided
-if(OPENMAMA_SRC)
-    include_directories(${MAMA_ROOT}/include)
-    include_directories(${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c)
-    include_directories(${OPENMAMA_SRC}/mama/c_cpp/src/c)
-    link_directories(${MAMA_ROOT}/lib)
-    link_directories(${GTEST_ROOT}/lib)
+# We'll need OpenMAMA's source code for unit test code
+include(FetchContent)
+FetchContent_Declare(
+  openmama
+  GIT_REPOSITORY https://github.com/finos/OpenMAMA.git
+  GIT_TAG        next
+)
+FetchContent_Populate(openmama)
 
-    add_executable(UnitTestMamaMsgC
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/MainUnitTestC.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/mamamsg/msgatomictests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/mamamsg/msgcompositetests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/mamamsg/msgfieldatomictests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/mamamsg/msgfieldcompositetests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/mamamsg/msgfieldvectortests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/mamamsg/msggeneraltests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/mamamsg/msgiterationtests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/mamamsg/msgstatustests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/mamamsg/msgvectortests.cpp
-    )
-    target_link_libraries(UnitTestMamaMsgC mama gtest pthread wombatcommon)
+# We need gtest for unit tests
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        release-1.10.0
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+set(BUILD_GTEST ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
 
-    add_executable(UnitTestMamaPayloadC
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/MainUnitTestC.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/payload/fieldatomictests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/payload/fieldcompositetests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/payload/fieldvectortests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/payload/payloadatomictests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/payload/payloadcompositetests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/payload/payloadgeneraltests.cpp
-        ${OPENMAMA_SRC}/mama/c_cpp/src/gunittest/c/payload/payloadvectortests.cpp
-    )
-    target_link_libraries(UnitTestMamaPayloadC mama gtest pthread wombatcommon)
-else()
-    message(WARNING "If you want full unit tests, you should provide -DOPENMAMA_SRC=")
-endif()
+include_directories(${MAMA_ROOT}/include)
+include_directories(${MAMA_ROOT}/include/wombat)
+include_directories(${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c)
+include_directories(${openmama_SOURCE_DIR}/mama/c_cpp/src/c)
+link_directories(${MAMA_ROOT}/lib)
+link_directories(${GTEST_ROOT}/lib)
+
+add_executable(UnitTestMamaMsgC
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/MainUnitTestC.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgatomictests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgcompositetests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgfieldatomictests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgfieldcompositetests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgfieldvectortests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msggeneraltests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgiterationtests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgstatustests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgvectortests.cpp
+)
+target_link_libraries(UnitTestMamaMsgC ${OPENMAMA_LIBS} gtest)
+gtest_discover_tests(
+    UnitTestMamaMsgC
+    EXTRA_ARGS -m qpid -p omnmmsg -i Q
+    PROPERTIES ENVIRONMENT
+        "WOMBAT_PATH=${openmama_SOURCE_DIR}/mama/c_cpp/src/examples:${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c"
+)
+
+add_executable(UnitTestMamaPayloadC
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/MainUnitTestC.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/fieldatomictests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/fieldcompositetests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/fieldvectortests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadatomictests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadcompositetests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadgeneraltests.cpp
+    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadvectortests.cpp
+)
+target_link_libraries(UnitTestMamaPayloadC ${OPENMAMA_LIBS} gtest)
+gtest_discover_tests(
+    UnitTestMamaPayloadC
+    EXTRA_ARGS -m qpid -p omnmmsg -i O
+    PROPERTIES ENVIRONMENT
+        "WOMBAT_PATH=${openmama_SOURCE_DIR}/mama/c_cpp/src/examples:${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c"
+)

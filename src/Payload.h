@@ -356,6 +356,9 @@ public:
 
     // Meta data for the payload
     omnmHeader    mHeader;
+
+    // Closure which may be used by extending modules
+    const void*   mExtenderClosure;
 private:
     // Find the field inside the buffer and populate provided field with its
     // location

@@ -1,5 +1,8 @@
 include_directories(.)
 include_directories(${MAMA_ROOT}/include)
+include_directories(${MAMA_ROOT}/include/wombat)
+
+enable_testing()
 
 # Default to installing directly to MAMA directory
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -17,6 +20,7 @@ add_library(mamaomnmmsgimpl
                    Iterator.cpp
                    Iterator.h
                    omnmmsgpayloadfunctions.h
+                   omnmmsgpayloadimpl.h
                    Payload.cpp
                    Payload.h)
 
@@ -30,17 +34,12 @@ if(WIN32)
                           libwombatcommon${MAMA_LIB_SUFFIX}
                           libmamac${MAMA_LIB_SUFFIX})
     set_target_properties(mamaomnmmsgimpl PROPERTIES PREFIX "lib")
+    set_target_properties(mamaomnmmsgimpl PROPERTIES OUTPUT_NAME "mamaomnmmsgimpl${MAMA_LIB_SUFFIX}")
 
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
     # Windows Targets
-    install(TARGETS mamaomnmmsgimpl
-            CONFIGURATIONS Release
-            DESTINATION bin/dynamic)
-    install(TARGETS mamaomnmmsgimpl
-            CONFIGURATIONS Debug
-            DESTINATION bin/dynamic-debug)
-
+    install(TARGETS mamaomnmmsgimpl DESTINATION bin)
 elseif(UNIX)
     add_library(mamaomnmmsgimpl-static
                 STATIC Field.cpp
@@ -49,24 +48,34 @@ elseif(UNIX)
                        omnmmsgpayloadfunctions.h
                        Payload.cpp
                        Payload.h)
-   install(TARGETS mamaomnmmsgimpl-static DESTINATION lib)
+    install(TARGETS mamaomnmmsgimpl-static DESTINATION lib)
 
-   target_link_libraries(mamaomnmmsgimpl wombatcommon mama)
-   install(TARGETS mamaomnmmsgimpl DESTINATION lib)
+    target_link_libraries(mamaomnmmsgimpl wombatcommon mama)
+    install(TARGETS mamaomnmmsgimpl DESTINATION lib)
 
-   if( (NOT ENABLE_TSAN) AND (GTEST_ROOT) )
-       # Only build unit tests on linux (AND we're not building for TSAN)
-       # (static linking not supported w/tsan)
-       include_directories(${GTEST_ROOT}/include)
-       link_directories(${GTEST_ROOT}/lib)
-       add_executable(unittests UnitTests.cpp)
-       target_link_libraries(unittests gtest mamaomnmmsgimpl pthread)
-   endif()
+    if( (NOT ENABLE_TSAN) )
+        # Only build unit tests on linux (AND we're not building for TSAN)
+        # (static linking not supported w/tsan)
+        include_directories(${GTEST_ROOT}/include)
+        link_directories(${GTEST_ROOT}/lib)
+        add_executable(unittests UnitTests.cpp)
+        target_link_libraries(unittests gtest mamaomnmmsgimpl pthread)
+        gtest_discover_tests(
+            unittests
+            EXTRA_ARGS -m qpid -p omnmmsg -i O
+            PROPERTIES ENVIRONMENT
+                "WOMBAT_PATH=${openmama_SOURCE_DIR}/mama/c_cpp/src/examples:${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c"
+        )
+    endif()
 endif()
 
+install(FILES omnmmsgpayloadfunctions.h omnmmsgpayloadimpl.h DESTINATION include/mama/integration/bridge)
+
 # Benchmarking utility
-add_executable(OmnmBenchmark
-        Benchmarker.cpp
-        Benchmarker.h
-)
-target_link_libraries(OmnmBenchmark mamaomnmmsgimpl wombatcommon mama mamacpp pthread)
+if (NOT MSVC)
+    add_executable(OmnmBenchmark
+            Benchmarker.cpp
+            Benchmarker.h
+    )
+    target_link_libraries(OmnmBenchmark mamaomnmmsgimpl wombatcommon mama mamacpp pthread)
+endif ()

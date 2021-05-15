@@ -38,6 +38,7 @@
 #include <mama/price.h>
 
 #include "omnmmsgpayloadfunctions.h"
+#include "omnmmsgpayloadimpl.h"
 #include <wombat/strutils.h>
 #include <wombat/memnode.h>
 #include <stddef.h>
@@ -161,12 +162,13 @@ do                                                                             \
   =                  Private implementation prototypes                    =
   =========================================================================*/
 
-OmnmPayloadImpl::OmnmPayloadImpl() : mPayloadBuffer(NULL),
+OmnmPayloadImpl::OmnmPayloadImpl() : mPayloadBuffer(nullptr),
                                      mPayloadBufferSize(0),
                                      mPayloadBufferTail(0),
                                      mField(), /* Inline struct member */
                                      mHeader(),
-                                     mParent(NULL)
+                                     mParent(nullptr),
+                                     mExtenderClosure(nullptr)
 {
     mPayloadBufferSize           = DEFAULT_PAYLOAD_SIZE;
     mPayloadBuffer               = (uint8_t*) calloc (mPayloadBufferSize, 1);
@@ -1576,6 +1578,53 @@ omnmmsgPayload_addVectorMsg (msgPayload          msg,
 }
 
 mama_status
+omnmmsgPayloadImpl_updateVectorMsgPayload (msgPayload          msg,
+                                           const char*         name,
+                                           mama_fid_t          fid,
+                                           const msgPayload    value[],
+                                           mama_size_t         size) {
+    OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
+    size_t bytesRequired = 0, i = 0;
+    VALIDATE_NAME_FID(name, fid);
+    VALIDATE_NON_NULL(msg);
+    VALIDATE_NON_NULL(value);
+
+    for (i = 0; i < size; i++)
+    {
+        mama_size_t msgSize = 0;
+        omnmmsgPayload_getByteSize(value[i], &msgSize);
+        bytesRequired += msgSize + sizeof(mama_u32_t);
+    }
+
+    // Ensure the buffer is big enough for this
+    allocateBufferMemory ((void**)&impl->mField.mBuffer,
+                          &impl->mField.mBufferLen,
+                          bytesRequired);
+
+    uint8_t* target = (uint8_t*)impl->mField.mBuffer;
+    for (i = 0; i < size; i++)
+    {
+        const void* buffer = NULL;
+        mama_size_t bufferLen = 0;
+        omnmmsgPayload_getByteBuffer(value[i], &buffer, &bufferLen);
+        if (bufferLen > UINT32_MAX) return MAMA_STATUS_INVALID_ARG;
+        mama_u32_t len = (mama_u32_t) bufferLen;
+
+        /* Put size of each message before each message */
+        memcpy((void*)target, &len, sizeof(len));
+        target = target + sizeof(mama_u32_t);
+        memcpy((void*)target, buffer, len);
+        target += bufferLen;
+    }
+
+    return ((OmnmPayloadImpl*) msg)->updateField (MAMA_FIELD_TYPE_VECTOR_MSG,
+                                                  name,
+                                                  fid,
+                                                  (uint8_t*)impl->mField.mBuffer,
+                                                  bytesRequired);
+}
+
+mama_status
 omnmmsgPayload_addVectorDateTime (msgPayload          msg,
                                   const char*         name,
                                   mama_fid_t          fid,
@@ -2462,3 +2511,18 @@ omnmmsgPayload_getField (const msgPayload    msg,
 }
 
 
+mama_status
+omnmmsgPayloadImpl_setExtenderClosure (msgPayload msg, void* closure)
+{
+    if (nullptr == msg || nullptr == closure) return MAMA_STATUS_NULL_ARG;
+    ((OmnmPayloadImpl*) msg)->mExtenderClosure = closure;
+    return MAMA_STATUS_OK;
+}
+
+mama_status
+omnmmsgPayloadImpl_getExtenderClosure (msgPayload msg, const void** closure)
+{
+    if (nullptr == msg || nullptr == closure) return MAMA_STATUS_NULL_ARG;
+    *closure = ((OmnmPayloadImpl*) msg)->mExtenderClosure;
+    return MAMA_STATUS_OK;
+}
