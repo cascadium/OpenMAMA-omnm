@@ -17,36 +17,43 @@ jobs:
            package_manager: yum
            distro: el
            distro_version: 7
+           distrib_package_qualifier: el7
          - image: openmama/openmama-dev:centos-8
            package_type: rpm
            package_manager: yum
            distro: el
            distro_version: 8
+           distrib_package_qualifier: el8
          - image: openmama/openmama-dev:fedora-31
            package_type: rpm
            package_manager: dnf
            distro: fedora
            distro_version: 31
+           distrib_package_qualifier: fc31
          - image: openmama/openmama-dev:fedora-32
            package_type: rpm
            package_manager: dnf
            distro: fedora
            distro_version: 32
+           distrib_package_qualifier: fc32
          - image: openmama/openmama-dev:ubuntu-16.04
            package_type: deb
            package_manager: apt
            distro: ubuntu
            distro_version: xenial
+           distrib_package_qualifier: ubuntu16.04
          - image: openmama/openmama-dev:ubuntu-18.04
            package_type: deb
            package_manager: apt
            distro: ubuntu
            distro_version: bionic
+           distrib_package_qualifier: ubuntu18.04
          - image: openmama/openmama-dev:ubuntu-20.04
            package_type: deb
            package_manager: apt
            distro: ubuntu
            distro_version: focal
+           distrib_package_qualifier: ubuntu20.04
     steps:
     - name: Check out the code
       uses: actions/checkout@v1
@@ -78,7 +85,7 @@ jobs:
           --url "http://cascadium.io/" \
           --license MIT \
           -d openmama \
-          -p openmama-omnm-$(cat VERSION | xargs)-1.$DISTRIB_PACKAGE_QUALIFIER.x86_64.${{ matrix.package_type }} \
+          -p openmama-omnm-$(cat VERSION | xargs)-1.${{ matrix.distrib_package_qualifier }}.x86_64.${{ matrix.package_type }} \
           --description "OpenMAMA OMNM payload bridge" \
           /opt/openmama-omnm/=/opt/openmama/
     - name: Identify created package file
