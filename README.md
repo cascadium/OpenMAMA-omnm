@@ -2,83 +2,86 @@
 
 [![Join the chat at https://gitter.im/fquinner/OpenMAMA-omnm](https://badges.gitter.im/fquinner/OpenMAMA-omnm.svg)](https://gitter.im/fquinner/OpenMAMA-omnm?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+![Build and Test](https://github.com/cascadium/OpenMAMA-omnm/actions/workflows/main.yml/badge.svg)
+
 ## Overview
 
 Pronounced *ominum* (because it's fun to say), this is the OpenMAMA Native
-Messaging bridge. This project really only exists to provide a reasonably
-efficient middleware which can be used for testing ZeroMQ. If you look at
-the code you'll see I have tried my best to focus on methods which reduce
-the number of lines of code which are required to maintain.
+Messaging bridge. 
 
-In future if people are using this, I may expand the functionality out some
-more, but in the meantime, it focuses entirely on scalar data types.
+The idea is to create a dependency-free payload implementation for OpenMAMA so that it
+can be used with middlewares which don't have their own payload format (e.g. ZeroMQ,
+Nanomsg etc).
 
-*NB: This project is MIT Licensed and in no way affiliated with nor supported
+The payload implementation is high performance and self describing so it is quite flexible.
+It also supports every interface which is supported by OpenMAMA, and passes every OpenMAMA
+unit test currently available.
+
+*NB: This project is MIT Licensed, maintained by [cascadium.io](https://cascadium.io) and in no way affiliated with nor supported
 by the OpenMAMA project - if you find any issues, please report to
 this project via github.*
 
 ## Functionality
 
-The payload functionality is currently limited to:
+The payload is considered feature complete and includes:
 
 * Serialization / Deserialization functions
 * Apply methods
 * Iterators (both callback based and iterator based)
 * Scalar data type accessor and modification methods for both field and message
+* Sub messages
+* All vector types
+* Binary and opaque data types
+* String serialization functionality
+* It may be **extended** to form a suitable base for other payload implementations.
 
-There are several known limitations which exist. Some by design, some I'll
-maybe correct later:
+## Extending this Bridge
 
-* Not network byte ordered so you can't cross CPU architectures from pub to sub
-* Doesn't support any vector data types
-* Doesn't support sub messages
-* Doesn't support toString functionality
-* Doesn't support binary / opaque data types
+It is possible to use this payload as a base bridge simply by implementing:
 
-If you really want to overcome these limitations, let me know or feel free to
-contribute an implementation yourself.
+* `<yourpayload>msgPayload_init`
+* `<yourpayload>msgPayload_getType`
+* `<yourpayload>msgPayload_create`
+* `<yourpayload>msgPayload_destroy`
+* `<yourpayload>msgPayload_copy`
+* `<yourpayload>msgPayload_serialize`
+* `<yourpayload>msgPayload_unSerialize`
+* `<yourpayload>msgPayload_getByteBuffer`
+* `<yourpayload>msgPayload_getByteSize`
+* `<yourpayload>msgPayload_setByteBuffer`
+* `<yourpayload>msgPayload_createFromByteBuffer`
+* `<yourpayload>msgPayload_addVectorMsg`
+* `<yourpayload>msgPayload_updateVectorMsg`
+
+And passing through the API call to omnmsg for all other methods
 
 ## Build Instructions
 
-*NB: This is very much in development and I will always be developing on the
-latest version of Fedora. If I have broken an OS that you use, please let me
-know.*
-
 ### Supported Platforms
 
-* RHEL 7 and 8
-* Fedora
-* Ubuntu
-* OSX
-* Windows
+We support all of the platforms currently supported by OpenMAMA. [The complete list can be found here](https://openmama.finos.org/openmama_supported_platforms.html).
 
 ### Dependencies
 
 The bridge depends on:
 
-* MAMA / OpenMAMA
-* Scons
-
-As of the latest version of OpenMAMA, there is no longer a requirement to
-build this library off my own special fork of OpenMAMA. Instead thanks to
-dynamic bridge loading support, you can now build this off:
-
-* The next branch of OpenMAMA
-* The OpenMAMA-2.4.0 branch of OpenMAMA
-
-The master branch will also contain the correct changes once the next OpenMAMA
-GA release is issued which is expected within the next couple of weeks.
+* OpenMAMA 2.4.0+
+* Cmake
 
 ### Building
 
-If you have all the prerequisites, the build process should be pretty
-straightforward:
+The software can be build in the standard cmake way
 
-    scons --with-mamasource=PATH --with-mamainstall=PATH --with-gtest=PATH
+    mkdir build
+    cd build
+    cmake .. -DMAMA_ROOT=/path/to/openmama
+    make install
+
+Which will install the bridge to the OpenMAMA root directory. If building on windows, instead of `make`, run `cmake --build . --target install`.
 
 ## Usage Instructions
 
-After building, you will have a `libmamaomnmmsgimpl.so` library created. Add the
+Add the
 directory containing this library to your `LD_LIBRARY_PATH` and set the
 following property in your `mama.properties` configuration file:
 
@@ -88,9 +91,9 @@ following property in your `mama.properties` configuration file:
 
 * [OpenMAMA](http://openmama.org)
 * [ZeroMQ](http://zeromq.org)
-* [OpenMAMA ZeroMQ Middleware Bridge](https://github.com/fquinner/OpenMAMA-zmq)
+* [OpenMAMA OZ ZeroMQ Middleware Bridge](https://github.com/nyfix/OZ)
+* [OpenMAMA ZeroMQ Middleware Bridge (archived)](https://github.com/fquinner/OpenMAMA-zmq)
 
-## Blog
+## More from Cascadium
 
-If you're interested in the thought process behind this or the ramblings of the
-author, you can shoot on over to [my blog page](http://fquinner.github.io).
+If you want to see what else we're up to, you can head on over to [cascadium.io](https://cascadium.io). We offer professional support for all of our projects as well as bespoke development for your in-house needs.
