@@ -562,7 +562,7 @@ OmnmPayloadImpl::updateField (mamaFieldType type, omnmFieldImpl& field,
     // If buffer needs to expand or shrink
     if (bufferLen != field.mSize)
     {
-        int32_t delta = (int32_t)(bufferLen - field.mSize);
+        ssize_t delta = (signed) bufferLen - (signed) field.mSize;
         // Every field after this field has been either pushed forward or back by delta
         for (size_t i = field.mIndex + 1; i < mFieldHints.size(); ++i) {
           mFieldHints[i].fieldOffset += delta;
@@ -601,7 +601,8 @@ OmnmPayloadImpl::updateField (mamaFieldType type, omnmFieldImpl& field,
             // Finally move the memory across
             memmove ((void*)(origin + delta), origin, size);
         }
-        mPayloadBufferTail += delta;
+
+        mPayloadBufferTail = (signed) mPayloadBufferTail + delta;
     }
 
     if (isFieldTypeSized(field.mFieldType))
