@@ -106,7 +106,7 @@ void Benchmarker::runSerializationTests(uint64_t repeats) {
         const void* buf;
         mama_size_t bufLen;
         omnmmsgPayload_serialize(payload, &buf, &bufLen);
-        omnmmsgPayload_unSerialize(payload, (const void**)buf, bufLen);
+        omnmmsgPayload_unSerialize(payload, buf, bufLen);
     }
 }
 
