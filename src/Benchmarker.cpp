@@ -111,7 +111,11 @@ void Benchmarker::runSerializationTests(uint64_t repeats) {
 }
 
 int main(int argc, char* argv[]) {
-    Mama::loadBridge("qpid");
+    char* bridge = getenv("MAMA_MW");
+    if (bridge == nullptr) {
+        bridge = "qpid";
+    }
+    Mama::loadBridge(bridge);
     Mama::loadPayloadBridge("omnmmsg");
     Mama::open();
     Benchmarker* benchmarker = new Benchmarker();
