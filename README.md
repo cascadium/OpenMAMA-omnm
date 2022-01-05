@@ -9,17 +9,13 @@
 Pronounced *ominum* (because it's fun to say), this is the OpenMAMA Native
 Messaging bridge. 
 
-The idea is to create a dependency-free payload implementation for OpenMAMA so that it
+This project provides a dependency-free payload implementation for OpenMAMA so that it
 can be used with middlewares which don't have their own payload format (e.g. ZeroMQ,
 Nanomsg etc).
 
 The payload implementation is high performance and self describing so it is quite flexible.
 It also supports every interface which is supported by OpenMAMA, and passes every OpenMAMA
 unit test currently available.
-
-*NB: This project is MIT Licensed, maintained by [cascadium.io](https://cascadium.io) and in no way affiliated with nor supported
-by the OpenMAMA project - if you find any issues, please report to
-this project via github.*
 
 ## Functionality
 
@@ -33,7 +29,7 @@ The payload is considered feature complete and includes:
 * All vector types
 * Binary and opaque data types
 * String serialization functionality
-* It may be **extended** to form a suitable base for other payload implementations.
+* It may be **extended** to form a suitable base for other payload implementations
 
 ## Extending this Bridge
 
@@ -53,7 +49,7 @@ It is possible to use this payload as a base bridge simply by implementing:
 * `<yourpayload>msgPayload_addVectorMsg`
 * `<yourpayload>msgPayload_updateVectorMsg`
 
-And passing through the API call to omnmsg for all other methods
+And passing through the API call to omnmsg for all other methods. As a working example, see  [our msgpack payload](https://github.com/cascadium/OpenMAMA-msgpack).
 
 ## Build Instructions
 
@@ -66,7 +62,7 @@ We support all of the platforms currently supported by OpenMAMA. [The complete l
 The bridge depends on:
 
 * OpenMAMA 2.4.0+
-* Cmake
+* CMake 3.11+
 
 ### Building
 
@@ -91,6 +87,7 @@ following property in your `mama.properties` configuration file:
 
 * [OpenMAMA](http://openmama.org)
 * [ZeroMQ](http://zeromq.org)
+* [OpenMAMA Msgpack](https://github.com/cascadium/OpenMAMA-msgpack)
 * [OpenMAMA OZ ZeroMQ Middleware Bridge](https://github.com/nyfix/OZ)
 * [OpenMAMA ZeroMQ Middleware Bridge (archived)](https://github.com/fquinner/OpenMAMA-zmq)
 
