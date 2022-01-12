@@ -61,7 +61,7 @@ We support all of the platforms currently supported by OpenMAMA. [The complete l
 
 The bridge depends on:
 
-* OpenMAMA 2.4.0+
+* OpenMAMA 6.3.1
 * CMake 3.11+
 
 ### Building
