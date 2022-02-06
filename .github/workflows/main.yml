@@ -28,8 +28,8 @@ jobs:
            package_type: rpm
            package_manager: yum
            distro: el
-           distro_version: 8
-           distrib_package_qualifier: el8s
+           distro_version: stream
+           distrib_package_qualifier: el8
          - image: openmama/openmama-dev:ubuntu-16.04
            package_type: deb
            package_manager: apt
@@ -58,6 +58,7 @@ jobs:
     - name: Standardise cmake version installed
       run: cd /usr && wget -c https://github.com/Kitware/CMake/releases/download/v3.19.4/cmake-3.19.4-Linux-x86_64.tar.gz -O - | tar -xz  --strip-components 1
     - name: Set up cloudsmith repository
+      if: ${{ env.ARTIFACT_TYPE && matrix.distro_version != 'stream' }}
       run: curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama-experimental/cfg/setup/bash.${{ matrix.package_type }}.sh' | bash
     - name: Installing OpenMAMA and other required packages
       run: ${{ matrix.package_manager }} install -y openmama git
@@ -92,7 +93,7 @@ jobs:
         path: ${{ env.PKG }}
     - name: Upload package to cloudsmith
       uses: cloudsmith-io/action@master
-      if: ${{ env.ARTIFACT_TYPE }}
+      if: ${{ env.ARTIFACT_TYPE && matrix.distro_version != 'stream' }}
       env:
         artifact_type: ${{ env.ARTIFACT_TYPE }}
       with:
