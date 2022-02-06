@@ -24,18 +24,12 @@ jobs:
            distro: el
            distro_version: 8
            distrib_package_qualifier: el8
-         - image: openmama/openmama-dev:fedora-31
+         - image: openmama/openmama-dev:centos-stream
            package_type: rpm
-           package_manager: dnf
-           distro: fedora
-           distro_version: 31
-           distrib_package_qualifier: fc31
-         - image: openmama/openmama-dev:fedora-32
-           package_type: rpm
-           package_manager: dnf
-           distro: fedora
-           distro_version: 32
-           distrib_package_qualifier: fc32
+           package_manager: yum
+           distro: el
+           distro_version: 8
+           distrib_package_qualifier: el8s
          - image: openmama/openmama-dev:ubuntu-16.04
            package_type: deb
            package_manager: apt
