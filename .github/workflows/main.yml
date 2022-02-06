@@ -58,7 +58,6 @@ jobs:
     - name: Standardise cmake version installed
       run: cd /usr && wget -c https://github.com/Kitware/CMake/releases/download/v3.19.4/cmake-3.19.4-Linux-x86_64.tar.gz -O - | tar -xz  --strip-components 1
     - name: Set up cloudsmith repository
-      if: ${{ env.ARTIFACT_TYPE && matrix.distro_version != 'stream' }}
       run: curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama-experimental/cfg/setup/bash.${{ matrix.package_type }}.sh' | bash
     - name: Installing OpenMAMA and other required packages
       run: ${{ matrix.package_manager }} install -y openmama git
