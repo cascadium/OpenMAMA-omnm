@@ -18,12 +18,6 @@ jobs:
            distro: el
            distro_version: 7
            distrib_package_qualifier: el7
-         - image: openmama/openmama-dev:centos-8
-           package_type: rpm
-           package_manager: yum
-           distro: el
-           distro_version: 8
-           distrib_package_qualifier: el8
          - image: openmama/openmama-dev:centos-stream
            package_type: rpm
            package_manager: yum
