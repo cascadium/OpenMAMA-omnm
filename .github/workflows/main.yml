@@ -86,7 +86,7 @@ jobs:
         path: ${{ env.PKG }}
     - name: Upload package to cloudsmith
       uses: cloudsmith-io/action@master
-      if: ${{ env.ARTIFACT_TYPE && matrix.distro_version != 'stream' }}
+      if: ${{ env.ARTIFACT_TYPE }}
       env:
         artifact_type: ${{ env.ARTIFACT_TYPE }}
       with:
