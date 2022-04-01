@@ -111,7 +111,7 @@ void Benchmarker::runSerializationTests(uint64_t repeats) {
 }
 
 int main(int argc, char* argv[]) {
-    char* bridge = getenv("MAMA_MW");
+    const char* bridge = getenv("MAMA_MW");
     if (bridge == nullptr) {
         bridge = "qpid";
     }
