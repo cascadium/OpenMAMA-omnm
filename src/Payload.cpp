@@ -481,8 +481,8 @@ OmnmPayloadImpl::addField (mamaFieldType type, const char* name, mama_fid_t fid,
     insertPoint += sizeof(uint8_t);
 
     // Update the fid
-    *((uint16_t*)insertPoint) = fid;
-    insertPoint += sizeof(uint16_t);
+    memcpy(insertPoint, &fid, sizeof(fid));
+    insertPoint += sizeof(fid);
 
     // Update the name
     if (NULL == name)
@@ -1247,7 +1247,10 @@ omnmmsgPayload_getFieldAsString (const msgPayload    msg,
     omnmFieldImpl targetField;
     memset (&targetField, 0, sizeof(targetField));
     VALIDATE_NON_NULL(msg);
-    ((OmnmPayloadImpl*) msg)->getField(name, fid, targetField);
+    mama_status status = ((OmnmPayloadImpl*) msg)->getField(name, fid, targetField);
+    if (status != MAMA_STATUS_OK) {
+       return status;
+    }
     return omnmmsgFieldPayload_getAsString (&targetField,
                                             msg,
                                             buffer,
@@ -2297,7 +2300,10 @@ omnmmsgPayload_getMsg (const msgPayload    msg,
     OmnmPayloadImpl* impl = (OmnmPayloadImpl *) msg;
     if (NULL == msg || NULL == result) return MAMA_STATUS_NULL_ARG;
 
-    impl->getField (name, fid, impl->mField);
+    mama_status status = impl->getField (name, fid, impl->mField);
+    if (status != MAMA_STATUS_OK) {
+       return status;
+    }
 
     return omnmmsgFieldPayload_getMsg ((msgFieldPayload)&impl->mField, result);
 }
