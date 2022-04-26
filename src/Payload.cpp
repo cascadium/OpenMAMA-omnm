@@ -421,12 +421,11 @@ OmnmPayloadImpl::addField (mamaFieldType type, const char* name, mama_fid_t fid,
 {
     if (bufferLen > UINT32_MAX) return MAMA_STATUS_INVALID_ARG;
 
-    // We will insert at the tail
-    uint8_t* insertPoint = mPayloadBuffer + mPayloadBufferTail;
+    const int nameLen = strlenEx(name) + 1;
 
     // New tail will be comprised of type, fid, field
     size_t newTailOffset = mPayloadBufferTail + FIELD_TYPE_WIDTH + FID_WIDTH +
-            strlenEx(name) + 1 + bufferLen;
+            nameLen + bufferLen;
 
     if (NULL == buffer || 0 == bufferLen || (NULL == name && 0 == fid))
     {
@@ -447,15 +446,15 @@ OmnmPayloadImpl::addField (mamaFieldType type, const char* name, mama_fid_t fid,
                           newTailOffset);
 
     // Will insert at wherever the current tail is
-    insertPoint = mPayloadBuffer + mPayloadBufferTail;
+    uint8_t* insertPoint = mPayloadBuffer + mPayloadBufferTail;
 
     // Update the field type
     *insertPoint = (uint8_t)type;
     insertPoint += sizeof(uint8_t);
 
     // Update the fid
-    *((uint16_t*)insertPoint) = fid;
-    insertPoint += sizeof(uint16_t);
+    memcpy(insertPoint, &fid, sizeof(fid));
+    insertPoint += sizeof(fid);
 
     // Update the name
     if (NULL == name)
@@ -466,8 +465,8 @@ OmnmPayloadImpl::addField (mamaFieldType type, const char* name, mama_fid_t fid,
     else
     {
         // Copy string including terminator
-        memcpy ((void*)insertPoint, name, strlen(name) + 1);
-        insertPoint += strlen(name) + 1;
+        memcpy ((void*)insertPoint, name, nameLen);
+        insertPoint += nameLen;
     }
 
     // If a variable width field, buffer will also need copy of size
@@ -535,7 +534,7 @@ OmnmPayloadImpl::updateField (mamaFieldType type, omnmFieldImpl& field,
     // If buffer needs to expand or shrink
     if (bufferLen != field.mSize)
     {
-        int32_t delta = (int32_t)(bufferLen - field.mSize);
+        ssize_t delta = (signed) bufferLen - (signed) field.mSize;
 
         // This will be the new offset of next field after the move
         size_t nextByteOffset = ((uint8_t*)field.mData - mPayloadBuffer) +
@@ -570,7 +569,8 @@ OmnmPayloadImpl::updateField (mamaFieldType type, omnmFieldImpl& field,
             // Finally move the memory across
             memmove ((void*)(origin + delta), origin, size);
         }
-        mPayloadBufferTail += delta;
+
+        mPayloadBufferTail = (signed) mPayloadBufferTail + delta;
     }
 
     if (isFieldTypeSized(field.mFieldType))
@@ -1197,7 +1197,10 @@ omnmmsgPayload_getFieldAsString (const msgPayload    msg,
     omnmFieldImpl targetField;
     memset (&targetField, 0, sizeof(targetField));
     VALIDATE_NON_NULL(msg);
-    ((OmnmPayloadImpl*) msg)->getField(name, fid, targetField);
+    mama_status status = ((OmnmPayloadImpl*) msg)->getField(name, fid, targetField);
+    if (status != MAMA_STATUS_OK) {
+       return status;
+    }
     return omnmmsgFieldPayload_getAsString (&targetField,
                                             msg,
                                             buffer,
@@ -2294,7 +2297,10 @@ omnmmsgPayload_getMsg (const msgPayload    msg,
     OmnmPayloadImpl* impl = (OmnmPayloadImpl *) msg;
     if (NULL == msg || NULL == result) return MAMA_STATUS_NULL_ARG;
 
-    impl->getField (name, fid, impl->mField);
+    mama_status status = impl->getField (name, fid, impl->mField);
+    if (status != MAMA_STATUS_OK) {
+       return status;
+    }
 
     return omnmmsgFieldPayload_getMsg ((msgFieldPayload)&impl->mField, result);
 }
