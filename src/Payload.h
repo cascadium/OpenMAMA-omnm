@@ -44,7 +44,7 @@ do                                                                             \
 {                                                                              \
     if (NULL == NAME && 0 == FID)                                              \
         return MAMA_STATUS_NULL_ARG;                                           \
-    else if (0 == strlenEx(NAME) && 0 == FID)                                  \
+    else if (0 == FID && '\0' == *NAME)                                        \
         return MAMA_STATUS_INVALID_ARG;                                        \
 } while (0)
 
