@@ -106,12 +106,16 @@ void Benchmarker::runSerializationTests(uint64_t repeats) {
         const void* buf;
         mama_size_t bufLen;
         omnmmsgPayload_serialize(payload, &buf, &bufLen);
-        omnmmsgPayload_unSerialize(payload, (const void**)buf, bufLen);
+        omnmmsgPayload_unSerialize(payload, buf, bufLen);
     }
 }
 
 int main(int argc, char* argv[]) {
-    Mama::loadBridge("qpid");
+    const char* bridge = getenv("MAMA_MW");
+    if (bridge == nullptr) {
+        bridge = "qpid";
+    }
+    Mama::loadBridge(bridge);
     Mama::loadPayloadBridge("omnmmsg");
     Mama::open();
     Benchmarker* benchmarker = new Benchmarker();
