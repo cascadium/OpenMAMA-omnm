@@ -105,7 +105,7 @@ omnmmsgPayload_serialize        (const msgPayload    msg,
 MAMAExpBridgeDLL
 mama_status
 omnmmsgPayload_unSerialize      (const msgPayload    msg,
-                                 const void**        buffer,
+                                 const void*         buffer,
                                  mama_size_t         bufferLength);
 
 MAMAExpBridgeDLL

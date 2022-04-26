@@ -141,7 +141,7 @@ TEST_F(OmnmTests, SerializeDeserialize)
     omnmmsgPayload_serialize (mPayloadBase, &serializedBuffer, &serializedBufferSize);
 
     omnmmsgPayload_create (&copy);
-    omnmmsgPayload_unSerialize (copy, (const void**)serializedBuffer, serializedBufferSize);
+    omnmmsgPayload_unSerialize (copy, serializedBuffer, serializedBufferSize);
     omnmmsgPayload_getI64 (copy, "banana", 666, &actual);
     ASSERT_EQ (expected, actual);
     omnmmsgPayload_destroy (copy);
