@@ -680,7 +680,7 @@ omnmmsgPayload_copy (const msgPayload    msg,
     }
 
     return omnmmsgPayload_unSerialize ((OmnmPayloadImpl*) *copy,
-                                       (const void**)impl->mPayloadBuffer,
+                                       (const void*)impl->mPayloadBuffer,
                                        impl->mPayloadBufferTail);
 }
 
@@ -873,7 +873,7 @@ omnmmsgPayload_serialize (const msgPayload  msg,
 
 mama_status
 omnmmsgPayload_unSerialize (const msgPayload    msg,
-                            const void**        buffer,
+                            const void*         buffer,
                             mama_size_t         bufferLength)
 {
     OmnmPayloadImpl* impl = (OmnmPayloadImpl*) msg;
@@ -937,7 +937,7 @@ omnmmsgPayload_setByteBuffer (const msgPayload    msg,
 {
     if (NULL == msg || NULL == buffer) return MAMA_STATUS_NULL_ARG;
     if (0 == bufferLength) return MAMA_STATUS_INVALID_ARG;
-    return omnmmsgPayload_unSerialize (msg, (const void**)buffer, bufferLength);
+    return omnmmsgPayload_unSerialize (msg, buffer, bufferLength);
 }
 
 mama_status
@@ -949,7 +949,7 @@ omnmmsgPayload_createFromByteBuffer (msgPayload*         msg,
     if (NULL == msg || NULL == buffer) return MAMA_STATUS_NULL_ARG;
     if (0 == bufferLength) return MAMA_STATUS_INVALID_ARG;
     omnmmsgPayload_create (msg);
-    return omnmmsgPayload_unSerialize (*msg, (const void**)buffer, bufferLength);
+    return omnmmsgPayload_unSerialize (*msg, buffer, bufferLength);
 }
 
 mama_status
