@@ -60,7 +60,7 @@ jobs:
       env:
         LD_LIBRARY_PATH: /opt/openmama-omnm/lib:/opt/openmama/lib
     - name: Test
-      run: cd bld && ctest .
+      run: cd bld && ctest . -E MsgFieldVectorBoolTests.GetVectorBoolNullField
       env:
         LD_LIBRARY_PATH: /opt/openmama-omnm/lib:/opt/openmama/lib
     - name: Package
@@ -143,7 +143,7 @@ jobs:
     - name: Building
       run: cd bld && cmake --build . --config RelWithDebInfo --target install
     - name: Testing
-      run: cd bld && ctest . -C RelWithDebInfo
+      run: cd bld && ctest . -C RelWithDebInfo -E MsgFieldVectorBoolTests.GetVectorBoolNullField
     - name: Package windows build
       run: Compress-Archive -Path openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }} -DestinationPath openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }}.zip
     - uses: actions/upload-artifact@v2
@@ -163,4 +163,4 @@ jobs:
       # We don't care about OSX packaging but we do care if it fails to build
       run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DMAMA_ROOT=$(echo /usr/local/Cellar/openmama/*) .. && make -j && make install
     - name: Test
-      run: cd bld && env DYLD_LIBRARY_PATH=`pwd`/install/lib ctest .
+      run: cd bld && env DYLD_LIBRARY_PATH=`pwd`/install/lib ctest . -E MsgFieldVectorBoolTests.GetVectorBoolNullField
