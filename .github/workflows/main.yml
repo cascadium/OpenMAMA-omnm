@@ -4,7 +4,9 @@ on: push
 
 jobs:
   linux-build:
-    name: Build and Test for Linux
+    name: Linux ${{ matrix.name }}
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
     runs-on: ubuntu-20.04
     continue-on-error: true
     container:
@@ -12,36 +14,36 @@ jobs:
     strategy:
       matrix:
         include:
-         - image: openmama/openmama-dev:centos-7
-           package_type: rpm
-           package_manager: yum
-           distro: el
-           distro_version: 7
-           distrib_package_qualifier: el7
-         - image: openmama/openmama-dev:centos-stream
-           package_type: rpm
-           package_manager: yum
-           distro: el
-           distro_version: 8
-           distrib_package_qualifier: el8
-         - image: openmama/openmama-dev:ubuntu-16.04
-           package_type: deb
-           package_manager: apt
-           distro: ubuntu
-           distro_version: xenial
-           distrib_package_qualifier: ubuntu16.04
-         - image: openmama/openmama-dev:ubuntu-18.04
-           package_type: deb
-           package_manager: apt
-           distro: ubuntu
-           distro_version: bionic
-           distrib_package_qualifier: ubuntu18.04
-         - image: openmama/openmama-dev:ubuntu-20.04
-           package_type: deb
-           package_manager: apt
-           distro: ubuntu
-           distro_version: focal
-           distrib_package_qualifier: ubuntu20.04
+          - image: openmama/openmama-dev:centos-7
+            package_type: rpm
+            distro: el
+            distro_version: 7
+            name: CentOS 7
+          - image: openmama/openmama-dev:centos-stream8
+            package_type: rpm
+            distro: centos
+            distro_version: 8
+            name: CentOS Stream 8
+          - image: openmama/openmama-dev:centos-stream9
+            package_type: rpm
+            distro: centos
+            distro_version: 9
+            name: CentOS Stream 9
+          - image: openmama/openmama-dev:ubuntu-18.04
+            package_type: deb
+            distro: ubuntu
+            distro_version: bionic
+            name: Ubuntu 18.04 LTS
+          - image: openmama/openmama-dev:ubuntu-20.04
+            package_type: deb
+            distro: ubuntu
+            distro_version: focal
+            name: Ubuntu 20.04 LTS
+          - image: openmama/openmama-dev:ubuntu-22.04
+            package_type: deb
+            distro: ubuntu
+            distro_version: jammy
+            name: Ubuntu 22.04 LTS
     steps:
     - name: Check out the code
       uses: actions/checkout@v1
