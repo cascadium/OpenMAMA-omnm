@@ -45,60 +45,17 @@ jobs:
     steps:
     - name: Check out the code
       uses: actions/checkout@v1
-    - name: Override artifact type to release
-      if: endsWith(github.ref, '/master')
-      run: |
-        echo "ARTIFACT_TYPE=release" >> $GITHUB_ENV
-    - name: Standardise cmake version installed
-      run: cd /usr && wget -c https://github.com/Kitware/CMake/releases/download/v3.19.4/cmake-3.19.4-Linux-x86_64.tar.gz -O - | tar -xz  --strip-components 1
-    - name: Set up cloudsmith repository
-      run: curl -1sLf 'https://dl.cloudsmith.io/public/openmama/openmama-experimental/cfg/setup/bash.${{ matrix.package_type }}.sh' | bash
-    - name: Installing OpenMAMA and other required packages
-      run: ${{ matrix.package_manager }} install -y openmama git
-    - name: Build
-      run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=/opt/openmama-omnm -DMAMA_ROOT=/opt/openmama .. && make -j && make install
+    - name: Run Linux build
       env:
-        LD_LIBRARY_PATH: /opt/openmama-omnm/lib:/opt/openmama/lib
-    - name: Test
-      run: cd bld && ctest . -E MsgFieldVectorBoolTests.GetVectorBoolNullField
-      env:
-        LD_LIBRARY_PATH: /opt/openmama-omnm/lib:/opt/openmama/lib
-    - name: Package
-      run: |
-        fpm -s dir \
-          -t ${{ matrix.package_type }} \
-          -m "contact@cascadium.io" \
-          --name openmama-omnm \
-          --version $(cat VERSION | xargs) \
-          --url "http://cascadium.io/" \
-          --license MIT \
-          -d openmama \
-          -p openmama-omnm-$(cat VERSION | xargs)-1.${{ matrix.distrib_package_qualifier }}.x86_64.${{ matrix.package_type }} \
-          --description "OpenMAMA OMNM payload bridge" \
-          /opt/openmama-omnm/=/opt/openmama/
-    - name: Identify created package file
-      run: 'echo PKG=`find . -name "*.${{ matrix.package_type }}"` >> $GITHUB_ENV'
-    - name: Save package as an artifact
-      if: ${{ !env.ACT }}
+        CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
+      run: ./devops/build/ci-run.sh
+    - name: Find the package
+      run: 'echo PKG=`find ./dist -name "*.${{ matrix.package_type }}"` >> $GITHUB_ENV'
+    - name: Archive package as an artifact
       uses: actions/upload-artifact@v1
       with:
         name: package
         path: ${{ env.PKG }}
-    - name: Upload package to cloudsmith
-      uses: cloudsmith-io/action@master
-      if: ${{ env.ARTIFACT_TYPE }}
-      env:
-        artifact_type: ${{ env.ARTIFACT_TYPE }}
-      with:
-        api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
-        command: 'push'
-        format: '${{ matrix.package_type }}'
-        owner: 'openmama'
-        repo: 'openmama-thirdparty'
-        distro: '${{ matrix.distro }}'
-        release: '${{ matrix.distro_version }}'
-        republish: 'true'
-        file: '${{ env.PKG }}'
 
   windows-build:
     name: Build and Test for Windows
@@ -128,24 +85,13 @@ jobs:
     steps:
     - name: Check out the code
       uses: actions/checkout@v1
-    - name: Adding vcpkg install prefix to PATH
-      run: echo "C:\vcpkg\installed\${{ matrix.platform }}-windows\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-    - name: Adding potential install prefix to PATH
-      run: echo "${{ github.workspace }}\openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }}\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-    - name: Printing the path
-      run: echo $env:PATH
-    - name: Installing OpenMAMA
-      run: vcpkg install openmama:${{ matrix.platform }}-windows
-    - name: Installing other prerequisites
-      run: choco install --no-progress -y cmake
-    - name: Configuring build
-      run: mkdir bld && cd bld && cmake -G "${{ matrix.generator }}" ${{ matrix.args }} -DCMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }} -DGTEST_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ -DMAMA_ROOT=C:/vcpkg/installed/${{ matrix.platform }}-windows/ ..
-    - name: Building
-      run: cd bld && cmake --build . --config RelWithDebInfo --target install
-    - name: Testing
-      run: cd bld && ctest . -C RelWithDebInfo -E MsgFieldVectorBoolTests.GetVectorBoolNullField
-    - name: Package windows build
-      run: Compress-Archive -Path openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }} -DestinationPath openmama-omnm.${{ matrix.vcver }}.${{ matrix.platform }}.zip
+    - name: Run Windows Build
+      run: ./devops/build/ci-run.bat
+      env:
+        PLATFORM: ${{ matrix.platform }}
+        GENERATOR: ${{ matrix.generator }}
+        EXTRA_ARGS: ${{ matrix.args }}
+        VCVER: ${{ matrix.vcver }}
     - uses: actions/upload-artifact@v2
       with:
         name: package
@@ -157,10 +103,5 @@ jobs:
     continue-on-error: true
     steps:
     - uses: actions/checkout@v1
-    - name: Installing OpenMAMA
-      run: brew install openmama
-    - name: Build
-      # We don't care about OSX packaging but we do care if it fails to build
-      run: mkdir bld && cd bld && cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DMAMA_ROOT=$(echo /usr/local/Cellar/openmama/*) .. && make -j && make install
-    - name: Test
-      run: cd bld && env DYLD_LIBRARY_PATH=`pwd`/install/lib ctest . -E MsgFieldVectorBoolTests.GetVectorBoolNullField
+    - name: MacOS Build
+      run: ./devops/build/ci-run.macos.sh
