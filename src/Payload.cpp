@@ -29,9 +29,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#ifndef __STDC_LIMIT_MACROS
-#define __STDC_LIMIT_MACROS
-#endif
 #include <stdint.h>
 
 #include <mama/mama.h>
@@ -534,7 +531,7 @@ OmnmPayloadImpl::updateField (mamaFieldType type, omnmFieldImpl& field,
     // If buffer needs to expand or shrink
     if (bufferLen != field.mSize)
     {
-        ssize_t delta = (signed) bufferLen - (signed) field.mSize;
+        int64_t delta = (int64_t) bufferLen - (int64_t) field.mSize;
 
         // This will be the new offset of next field after the move
         size_t nextByteOffset = ((uint8_t*)field.mData - mPayloadBuffer) +
