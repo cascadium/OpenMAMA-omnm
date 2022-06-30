@@ -9,10 +9,10 @@ set -e
 
 brew install openmama
 
-export DYLD_LIBRARY_PATH=$(pwd)/install/lib:$(echo /usr/local/Cellar/openmama/*)/lib
 
 mkdir bld
 cd bld
+export DYLD_LIBRARY_PATH=$(pwd)/install/lib:$(echo /usr/local/Cellar/openmama/*)/lib
 cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DMAMA_ROOT=$(echo /usr/local/Cellar/openmama/*) ..
 make -j
 make install
