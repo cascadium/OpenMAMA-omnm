@@ -69,12 +69,14 @@ add_subdirectory(src)
 
 # We'll need OpenMAMA's source code for unit test code
 include(FetchContent)
-FetchContent_Declare(
-  openmama
-  GIT_REPOSITORY https://github.com/finos/OpenMAMA.git
-  GIT_TAG        next
-)
-FetchContent_Populate(openmama)
+if (NOT openmama_POPULATED)
+  FetchContent_Declare(
+    openmama
+    GIT_REPOSITORY https://github.com/finos/OpenMAMA.git
+    GIT_TAG        next
+  )
+  FetchContent_Populate(openmama)
+endif()
 
 # We need gtest for unit tests
 FetchContent_Declare(
