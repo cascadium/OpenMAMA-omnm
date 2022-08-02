@@ -32,7 +32,7 @@
 
 #include <mama/mama.h>
 
-#include "omnmmsgpayloadfunctions.h"
+#include "mama/integration/bridge/omnmmsgpayloadfunctions.h"
 #include "Payload.h"
 #include "Iterator.h"
 

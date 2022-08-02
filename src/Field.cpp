@@ -35,7 +35,7 @@
 #include <wombat/memnode.h>
 
 #include "Payload.h"
-#include "omnmmsgpayloadfunctions.h"
+#include "mama/integration/bridge/omnmmsgpayloadfunctions.h"
 #include <wombat/strutils.h>
 
 

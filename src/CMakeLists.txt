@@ -25,8 +25,8 @@ add_library(mamaomnmmsgimpl
             SHARED Field.cpp
                    Iterator.cpp
                    Iterator.h
-                   omnmmsgpayloadfunctions.h
-                   omnmmsgpayloadimpl.h
+                   mama/integration/bridge/omnmmsgpayloadfunctions.h
+                   mama/integration/bridge/omnmmsgpayloadimpl.h
                    Payload.cpp
                    Payload.h)
 
@@ -51,7 +51,7 @@ elseif(UNIX)
                 STATIC Field.cpp
                        Iterator.cpp
                        Iterator.h
-                       omnmmsgpayloadfunctions.h
+                       mama/integration/bridge/omnmmsgpayloadfunctions.h
                        Payload.cpp
                        Payload.h)
     install(TARGETS mamaomnmmsgimpl-static DESTINATION lib)
@@ -75,7 +75,8 @@ elseif(UNIX)
     endif()
 endif()
 
-install(FILES omnmmsgpayloadfunctions.h omnmmsgpayloadimpl.h DESTINATION include/mama/integration/bridge)
+install(FILES mama/integration/bridge/omnmmsgpayloadfunctions.h mama/integration/bridge/omnmmsgpayloadimpl.h
+        DESTINATION include/mama/integration/bridge)
 
 # Benchmarking utility
 if (NOT MSVC)

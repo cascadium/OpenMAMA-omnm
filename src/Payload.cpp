@@ -34,8 +34,8 @@
 #include <mama/mama.h>
 #include <mama/price.h>
 
-#include "omnmmsgpayloadfunctions.h"
-#include "omnmmsgpayloadimpl.h"
+#include "mama/integration/bridge/omnmmsgpayloadfunctions.h"
+#include "mama/integration/bridge/omnmmsgpayloadimpl.h"
 #include <wombat/strutils.h>
 #include <wombat/memnode.h>
 #include <stddef.h>

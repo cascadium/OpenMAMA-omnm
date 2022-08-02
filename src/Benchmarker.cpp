@@ -3,7 +3,7 @@
 //
 
 #include "Benchmarker.h"
-#include "omnmmsgpayloadfunctions.h"
+#include "mama/integration/bridge/omnmmsgpayloadfunctions.h"
 // C++ Header
 #include <mama/MamaMsg.h>
 // C Header
