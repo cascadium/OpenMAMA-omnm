@@ -69,69 +69,74 @@ add_subdirectory(src)
 
 # We'll need OpenMAMA's source code for unit test code
 include(FetchContent)
+FetchContent_Declare(
+  openmama
+  GIT_REPOSITORY https://github.com/finos/OpenMAMA.git
+  GIT_TAG        next
+)
 if (NOT openmama_POPULATED)
-  FetchContent_Declare(
-    openmama
-    GIT_REPOSITORY https://github.com/finos/OpenMAMA.git
-    GIT_TAG        next
-  )
   FetchContent_Populate(openmama)
 endif()
 
-# We need gtest for unit tests
-FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        release-1.10.0
-)
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
-set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
-set(BUILD_GTEST ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
+option(WITH_UNITTEST "Build with unit tests" ON)
+if (WITH_UNITTEST)
+    # We need gtest for unit tests
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        release-1.10.0
+    )
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+    set(BUILD_GTEST ON CACHE BOOL "" FORCE)
+    if (NOT googletest_POPULATED)
+        FetchContent_MakeAvailable(googletest)
+    endif()
 
-include_directories(${MAMA_ROOT}/include)
-include_directories(${MAMA_ROOT}/include/wombat)
-include_directories(${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c)
-include_directories(${openmama_SOURCE_DIR}/mama/c_cpp/src/c)
-include_directories(${openmama_SOURCE_DIR}/common/c_cpp/src/c)
-link_directories(${MAMA_ROOT}/lib)
-link_directories(${GTEST_ROOT}/lib)
+    include_directories(${MAMA_ROOT}/include)
+    include_directories(${MAMA_ROOT}/include/wombat)
+    include_directories(${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c)
+    include_directories(${openmama_SOURCE_DIR}/mama/c_cpp/src/c)
+    include_directories(${openmama_SOURCE_DIR}/common/c_cpp/src/c)
+    link_directories(${MAMA_ROOT}/lib)
+    link_directories(${GTEST_ROOT}/lib)
 
-add_executable(UnitTestMamaMsgC
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/MainUnitTestC.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgatomictests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgcompositetests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgfieldatomictests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgfieldcompositetests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgfieldvectortests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msggeneraltests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgiterationtests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgstatustests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgvectortests.cpp
-)
-target_link_libraries(UnitTestMamaMsgC ${OPENMAMA_LIBS} gtest)
-gtest_discover_tests(
-    UnitTestMamaMsgC
-    EXTRA_ARGS -m qpid -p omnmmsg -i Q
-    PROPERTIES ENVIRONMENT
-        "WOMBAT_PATH=${openmama_SOURCE_DIR}/mama/c_cpp/src/examples:${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c"
-)
+    add_executable(UnitTestMamaMsgC
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/MainUnitTestC.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgatomictests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgcompositetests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgfieldatomictests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgfieldcompositetests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgfieldvectortests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msggeneraltests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgiterationtests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgstatustests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/mamamsg/msgvectortests.cpp
+    )
+    target_link_libraries(UnitTestMamaMsgC ${OPENMAMA_LIBS} gtest)
+    gtest_discover_tests(
+        UnitTestMamaMsgC
+        EXTRA_ARGS -m qpid -p omnmmsg -i Q
+        PROPERTIES ENVIRONMENT
+            "WOMBAT_PATH=${openmama_SOURCE_DIR}/mama/c_cpp/src/examples:${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c"
+    )
 
-add_executable(UnitTestMamaPayloadC
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/MainUnitTestC.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/fieldatomictests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/fieldcompositetests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/fieldvectortests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadatomictests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadcompositetests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadgeneraltests.cpp
-    ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadvectortests.cpp
-)
-target_link_libraries(UnitTestMamaPayloadC ${OPENMAMA_LIBS} gtest)
-gtest_discover_tests(
-    UnitTestMamaPayloadC
-    EXTRA_ARGS -m qpid -p omnmmsg -i O
-    PROPERTIES ENVIRONMENT
-        "WOMBAT_PATH=${openmama_SOURCE_DIR}/mama/c_cpp/src/examples:${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c"
-)
+    add_executable(UnitTestMamaPayloadC
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/MainUnitTestC.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/fieldatomictests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/fieldcompositetests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/fieldvectortests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadatomictests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadcompositetests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadgeneraltests.cpp
+        ${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c/payload/payloadvectortests.cpp
+    )
+    target_link_libraries(UnitTestMamaPayloadC ${OPENMAMA_LIBS} gtest)
+    gtest_discover_tests(
+        UnitTestMamaPayloadC
+        EXTRA_ARGS -m qpid -p omnmmsg -i O
+        PROPERTIES ENVIRONMENT
+            "WOMBAT_PATH=${openmama_SOURCE_DIR}/mama/c_cpp/src/examples:${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c"
+    )
+endif()

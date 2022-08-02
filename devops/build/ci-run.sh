@@ -59,7 +59,7 @@ fi
 mkdir -p $BUILD_DIR
 cd $BUILD_DIR
 export LD_LIBRARY_PATH=/opt/openmama-omnm/lib:/opt/openmama/lib
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_PREFIX=/opt/openmama-omnm -DMAMA_ROOT=$OPENMAMA_INSTALL_DIR "$SOURCE_PATH_ABSOLUTE"
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_UNITTEST=ON -DCMAKE_INSTALL_PREFIX=/opt/openmama-omnm -DMAMA_ROOT=$OPENMAMA_INSTALL_DIR "$SOURCE_PATH_ABSOLUTE"
 make -j
 make install
 ctest . --timeout 120 --output-on-failure -E MsgFieldVectorBoolTests.GetVectorBoolNullField
