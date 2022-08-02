@@ -59,15 +59,15 @@ elseif(UNIX)
     target_link_libraries(mamaomnmmsgimpl wombatcommon mama)
     install(TARGETS mamaomnmmsgimpl DESTINATION lib)
 
-    if( (NOT ENABLE_TSAN) )
+    if(WITH_UNITTEST AND (NOT ENABLE_TSAN) )
         # Only build unit tests on linux (AND we're not building for TSAN)
         # (static linking not supported w/tsan)
         include_directories(${GTEST_ROOT}/include)
         link_directories(${GTEST_ROOT}/lib)
-        add_executable(unittests UnitTests.cpp)
-        target_link_libraries(unittests gtest mamaomnmmsgimpl pthread)
+        add_executable(unittests_omnm UnitTests.cpp)
+        target_link_libraries(unittests_omnm gtest mamaomnmmsgimpl pthread)
         gtest_discover_tests(
-            unittests
+            unittests_omnm
             EXTRA_ARGS -m qpid -p omnmmsg -i O
             PROPERTIES ENVIRONMENT
                 "WOMBAT_PATH=${openmama_SOURCE_DIR}/mama/c_cpp/src/examples:${openmama_SOURCE_DIR}/mama/c_cpp/src/gunittest/c"
